@@ -20,6 +20,9 @@ class Mesh {
     public:
         Mesh(const std::vector<Vertex> &vertices, const std::vector<unsigned int> &indices, const std::vector<Texture> &textures);
         void draw(Shader &shaderProgram);
+        void update(const glm::mat4 &model) {
+            mModelMatrix = model;
+        }
 
     private:
         void setup();
@@ -30,6 +33,14 @@ class Mesh {
         std::vector<unsigned int> mIndices;
         std::vector<Texture> mTextures;
 
+        glm::mat4 mModelMatrix;
+
+};
+
+
+
+class CubeMesh : public Mesh {
+    CubeMesh();
 };
 
 #endif

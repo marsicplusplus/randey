@@ -23,7 +23,7 @@ class Renderer {
         static void framebufferSizeCB(GLFWwindow *window, int width, int height);
         void processInput();
 
-        Mesh loadMesh();
+        // Mesh loadMesh();
 };
 
 #endif
