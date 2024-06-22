@@ -8,7 +8,15 @@ Mesh::Mesh(const std::vector<Vertex> &vertices,
             const std::vector<int> &indices) :
     mVertices(vertices),
     mIndices(indices) {
-        mModelMatrix = glm::mat4(1.0);
+        setup();
+}
+
+Mesh::Mesh(const std::vector<Vertex> &vertices, 
+            const std::vector<int> &indices,
+            const Transform &t) :
+    mVertices(vertices),
+    mIndices(indices),
+    mTransform(t) {
         setup();
 }
 
@@ -58,7 +66,8 @@ void Mesh::draw(Shader &shaderProgram) {
     // }
     // glActiveTexture(0);
 
-    shaderProgram.setMat4("model", mModelMatrix);
+    shaderProgram.setMat4("model", mTransform.getMatrix());
+    shaderProgram.setMat4("modelTransposeInverse", mTransform.getTransposeInverse());
     glBindVertexArray(mVAO);
     glDrawElements(GL_TRIANGLES, mIndices.size(), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);

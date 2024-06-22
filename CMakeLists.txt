@@ -30,6 +30,7 @@ set( SRC
 	 src/core/mesh.cpp
 	 src/core/utils.cpp
 	 src/core/camera.cpp
+	 src/core/transform.cpp
 	 src/core/texture.cpp
 	 src/managers/input_manager.cpp
 	)

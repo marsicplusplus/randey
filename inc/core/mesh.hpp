@@ -3,6 +3,7 @@
 
 #include "core/texture.hpp"
 #include "core/shader.hpp"
+#include "core/transform.hpp"
 
 #include "glm/vec3.hpp"
 #include "glm/vec2.hpp"
@@ -26,12 +27,14 @@ struct Vertex {
 class Mesh {
     public:
         Mesh(const std::vector<Vertex> &vertices, 
+                const std::vector<int> &indices,
+                const Transform &t);
+        Mesh(const std::vector<Vertex> &vertices, 
                 const std::vector<int> &indices);
         void draw(Shader &shaderProgram);
-        void update(const glm::mat4 &model) {
-            mModelMatrix = model;
-        }
+        void update(float dt);
 
+        Transform mTransform;
     private:
         void setup();
 
@@ -40,7 +43,6 @@ class Mesh {
         std::vector<Vertex> mVertices;
         std::vector<int> mIndices;
 
-        glm::mat4 mModelMatrix;
 
 };
 

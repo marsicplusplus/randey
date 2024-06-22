@@ -4,6 +4,7 @@
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
 
+#include "core/camera.hpp"
 #include "core/mesh.hpp"
 
 #include <memory>
@@ -19,6 +20,7 @@ class Renderer {
     private:
         GLFWwindow *mWindow;
         uint32_t mWidth, mHeight;
+        std::unique_ptr<Camera> mCamera;
 
         static void framebufferSizeCB(GLFWwindow *window, int width, int height);
         void processInput();

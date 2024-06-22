@@ -11,6 +11,9 @@ class Camera {
         glm::mat4 getViewMatrix() const;
 
         void update(float df);
+        glm::vec3 getPos() const {
+            return mPos;
+        }
 
     private:
         void updateVectors();    
