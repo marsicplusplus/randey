@@ -28,7 +28,10 @@ set( SRC
 	 src/core/renderer.cpp
 	 src/core/shader.cpp
 	 src/core/mesh.cpp
+	 src/core/utils.cpp
+	 src/core/camera.cpp
 	 src/core/texture.cpp
+	 src/managers/input_manager.cpp
 	)
 
 add_executable( Randey ${SRC})

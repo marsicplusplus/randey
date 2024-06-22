@@ -11,14 +11,22 @@
 
 struct Vertex {
     public:
-        glm::vec3 pos;
-        glm::vec3 normal;
-        glm::vec2 uv;
+        glm::vec3 mPos;
+        glm::vec3 mNormal;
+        glm::vec2 mUv;
+
+        Vertex(glm::vec3 pos, glm::vec3 normal, glm::vec2 uv) :
+            mPos(pos), mNormal(normal), mUv(uv) {}
+
+        bool operator==(const Vertex& other) const {
+            return mPos == other.mPos && mNormal == other.mNormal && mUv == other.mUv;
+        }
 };
 
 class Mesh {
     public:
-        Mesh(const std::vector<Vertex> &vertices, const std::vector<unsigned int> &indices, const std::vector<Texture> &textures);
+        Mesh(const std::vector<Vertex> &vertices, 
+                const std::vector<int> &indices);
         void draw(Shader &shaderProgram);
         void update(const glm::mat4 &model) {
             mModelMatrix = model;
@@ -30,8 +38,7 @@ class Mesh {
         unsigned int mVAO, mVBO, mEBO;
 
         std::vector<Vertex> mVertices;
-        std::vector<unsigned int> mIndices;
-        std::vector<Texture> mTextures;
+        std::vector<int> mIndices;
 
         glm::mat4 mModelMatrix;
 
