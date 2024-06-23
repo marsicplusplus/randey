@@ -8,12 +8,16 @@
 #include "glm/vec2.hpp"
 
 #include "core/mesh.hpp"
+#include "core/material.hpp"
 
 namespace MeshLoader
 {
     bool LoadMesh(const std::string &fp, 
+        const std::string &mp,
         std::vector<Vertex> &vertices,
-        std::vector<int> &indices);
+        std::vector<int> &indices,
+        std::vector<Material> &materials,
+        std::vector<int> &materialIdxs);
 } // namespace MeshLoader
 
 

@@ -4,6 +4,7 @@
 #include "core/texture.hpp"
 #include "core/shader.hpp"
 #include "core/transform.hpp"
+#include "core/material.hpp"
 
 #include "glm/vec3.hpp"
 #include "glm/vec2.hpp"
@@ -28,9 +29,8 @@ class Mesh {
     public:
         Mesh(const std::vector<Vertex> &vertices, 
                 const std::vector<int> &indices,
-                const Transform &t);
-        Mesh(const std::vector<Vertex> &vertices, 
-                const std::vector<int> &indices);
+                Material mat,
+                const Transform &t = Transform());
         void draw(Shader &shaderProgram);
         void update(float dt);
 
@@ -39,6 +39,7 @@ class Mesh {
         void setup();
 
         unsigned int mVAO, mVBO, mEBO;
+        Material mMat;
 
         std::vector<Vertex> mVertices;
         std::vector<int> mIndices;

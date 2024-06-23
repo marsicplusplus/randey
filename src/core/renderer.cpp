@@ -3,9 +3,7 @@
 #include "core/shader.hpp"
 #include "managers/input_manager.hpp"
 #include "core/utils.hpp"
-
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+#include "core/material.hpp"
 
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -41,7 +39,6 @@ bool Renderer::init() {
 		InputManager::Instance()->setKeyValue(key, action != GLFW_RELEASE);
 	});
 
-
     mCamera = std::make_unique<Camera>(glm::vec3(0.0, 3.0, 5.0), glm::vec3(0.0, 1.0, 0.0));
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glEnable(GL_DEPTH_TEST);
@@ -55,13 +52,33 @@ bool Renderer::start() {
 
     std::vector<Vertex> vertices;
     std::vector<int> indices;
-    MeshLoader::LoadMesh("../models/cube.obj", vertices, indices);
-    Mesh rabbit(vertices, indices);
+    std::vector<Material> materials;
+    std::vector<int> materialIdxs;
+    MeshLoader::LoadMesh("../models/backpack.obj", "../models/", vertices, indices, materials, materialIdxs);
+    Material material(
+        glm::vec3(1.0, 0.5, 0.31),
+        nullptr,
+        glm::vec3(1.0, 0.5, 0.31),
+        nullptr,
+        glm::vec3(1.0, 1.0, 1.0),
+        nullptr
+    );
+    Mesh rabbit(vertices, indices, material);
 
     vertices.clear();
     indices.clear();
-    MeshLoader::LoadMesh("../models/cube.obj", vertices, indices);
-    Mesh cube(vertices, indices);
+    materials.clear();
+    materialIdxs.clear();
+    MeshLoader::LoadMesh("../models/cube.obj", "../models/", vertices, indices, materials, materialIdxs);
+    Material lightMaterial(
+        glm::vec3(1.0, 1.0, 1.0),
+        nullptr,
+        glm::vec3(1.0, 1.0, 1.0),
+        nullptr,
+        glm::vec3(1.0, 1.0, 1.0),
+        nullptr
+    );
+    Mesh cube(vertices, indices, lightMaterial);
 
     Shader objShader;
     objShader.attachShader("../glsl/vShader.glsl", GL_VERTEX_SHADER);
@@ -99,10 +116,16 @@ bool Renderer::start() {
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        glm::vec3 lightColor {
+            sin(glfwGetTime() * 2.0f),
+            sin(glfwGetTime() * 0.7f),
+            sin(glfwGetTime() * 1.3f),
+        };
         objShader.use();
-        objShader.setVec3("lightColor", lightColor);
-        objShader.setVec3("lightPos", lightPos);
-        objShader.setVec3("objColor", 1.0, 0.5, 0.3);
+        objShader.setVec3("light.position", lightPos);
+        objShader.setVec3("light.ambient", lightColor * 0.2f);
+        objShader.setVec3("light.diffuse", lightColor * 0.5f);
+        objShader.setVec3("light.specular", 1.0, 1.0, 1.0);
         objShader.setMat4("view", view);
         objShader.setMat4("projection", projection);
         objShader.setVec3("viewPos", mCamera->getPos());
