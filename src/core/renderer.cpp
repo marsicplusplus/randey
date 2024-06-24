@@ -52,32 +52,14 @@ bool Renderer::start() {
 
     std::vector<Vertex> vertices;
     std::vector<int> indices;
-    std::vector<Material> materials;
-    std::vector<int> materialIdxs;
-    MeshLoader::LoadMesh("../models/backpack.obj", "../models/", vertices, indices, materials, materialIdxs);
-    Material material(
-        glm::vec3(1.0, 0.5, 0.31),
-        nullptr,
-        glm::vec3(1.0, 0.5, 0.31),
-        nullptr,
-        glm::vec3(1.0, 1.0, 1.0),
-        nullptr
-    );
+    MaterialPtr material;
+    MeshLoader::LoadMesh("../models/backpack.obj", "../models/", vertices, indices, material);
     Mesh rabbit(vertices, indices, material);
 
     vertices.clear();
     indices.clear();
-    materials.clear();
-    materialIdxs.clear();
-    MeshLoader::LoadMesh("../models/cube.obj", "../models/", vertices, indices, materials, materialIdxs);
-    Material lightMaterial(
-        glm::vec3(1.0, 1.0, 1.0),
-        nullptr,
-        glm::vec3(1.0, 1.0, 1.0),
-        nullptr,
-        glm::vec3(1.0, 1.0, 1.0),
-        nullptr
-    );
+    MaterialPtr lightMaterial;
+    MeshLoader::LoadMesh("../models/cube.obj", "../models/", vertices, indices, lightMaterial);
     Mesh cube(vertices, indices, lightMaterial);
 
     Shader objShader;
@@ -99,7 +81,7 @@ bool Renderer::start() {
     cube.mTransform.scale(0.2);
 
     rabbit.mTransform.translate(0.0, -0.0, 1.0);
-    rabbit.mTransform.scale(5);
+    rabbit.mTransform.scale(1);
 
     while(!glfwWindowShouldClose(mWindow)) {
         float currentTime = glfwGetTime();
@@ -116,11 +98,11 @@ bool Renderer::start() {
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glm::vec3 lightColor {
-            sin(glfwGetTime() * 2.0f),
-            sin(glfwGetTime() * 0.7f),
-            sin(glfwGetTime() * 1.3f),
-        };
+        // glm::vec3 lightColor {
+        //     sin(glfwGetTime() * 2.0f),
+        //     sin(glfwGetTime() * 0.7f),
+        //     sin(glfwGetTime() * 1.3f),
+        // };
         objShader.use();
         objShader.setVec3("light.position", lightPos);
         objShader.setVec3("light.ambient", lightColor * 0.2f);

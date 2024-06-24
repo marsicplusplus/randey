@@ -29,7 +29,7 @@ class Mesh {
     public:
         Mesh(const std::vector<Vertex> &vertices, 
                 const std::vector<int> &indices,
-                Material mat,
+                MaterialPtr mat,
                 const Transform &t = Transform());
         void draw(Shader &shaderProgram);
         void update(float dt);
@@ -39,7 +39,7 @@ class Mesh {
         void setup();
 
         unsigned int mVAO, mVBO, mEBO;
-        Material mMat;
+        MaterialPtr mMat;
 
         std::vector<Vertex> mVertices;
         std::vector<int> mIndices;

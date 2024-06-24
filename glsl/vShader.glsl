@@ -11,9 +11,11 @@ uniform mat4 projection;
 
 out vec3 fPos;
 out vec3 fNorm;
+out vec2 fUv;
 
 void main() {
     fNorm = mat3(modelTransposeInverse) * aNorm;
     fPos = (model * vec4(aPos, 1.0)).xyz;
+    fUv = aUV;
     gl_Position = projection * view * model * vec4(aPos, 1.0);
 }

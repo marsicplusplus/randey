@@ -6,7 +6,7 @@
 
 Mesh::Mesh(const std::vector<Vertex> &vertices, 
             const std::vector<int> &indices,
-            Material mat,
+            MaterialPtr mat,
             const Transform &t) :
     mVertices(vertices),
     mIndices(indices),
@@ -60,10 +60,14 @@ void Mesh::draw(Shader &shaderProgram) {
     //     glBindTexture(GL_TEXTURE_2D, mTextures[i].getId());
     // }
     // glActiveTexture(0);
-    mMat.bindMaterial(shaderProgram);
+    mMat->bindMaterial(shaderProgram);
     shaderProgram.setMat4("model", mTransform.getMatrix());
     shaderProgram.setMat4("modelTransposeInverse", mTransform.getTransposeInverse());
     glBindVertexArray(mVAO);
     glDrawElements(GL_TRIANGLES, mIndices.size(), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
+}
+
+void Mesh::update(float dt) {
+
 }

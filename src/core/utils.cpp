@@ -23,8 +23,7 @@ namespace MeshLoader
         const std::string &mp, 
         std::vector<Vertex> &vertices,
         std::vector<int> &indices,
-        std::vector<Material> &materials,
-        std::vector<int> &materialIdxs) {
+        MaterialPtr &material) {
             tinyobj::attrib_t attrib;
             std::vector<tinyobj::shape_t> shapes;
             std::vector<tinyobj::material_t> objMaterials;
@@ -71,74 +70,55 @@ namespace MeshLoader
                         indices.push_back(uniqueVertices[vertex]);
                     }
                     index_offset += fv;
-                    materialIdxs.push_back(shape.mesh.material_ids[f]);
                 }
             }
-            // for (const auto& shape : shapes) {
-            //     for(const auto& idx : shape.mesh.indices) {
-            //         glm::vec3 pos(
-            //                 attrib.vertices[3 * idx.vertex_index + 0],
-            //                 attrib.vertices[3 * idx.vertex_index + 1],
-            //                 attrib.vertices[3 * idx.vertex_index + 2]);
-            //         glm::vec3 normal(0.0, 0.0, 0.0);
-            //         if(idx.normal_index >= 0) {
-            //             normal = glm::vec3(
-            //                 attrib.normals[3 * idx.normal_index + 0],
-            //                 attrib.normals[3 * idx.normal_index + 1],
-            //                 attrib.normals[3 * idx.normal_index + 2]);
-            //         }
-            //         glm::vec2 uvs(0.0);
-            //         if(idx.texcoord_index >= 0) {
-            //             uvs = glm::vec2(
-            //                     attrib.texcoords[2 * idx.texcoord_index + 0],
-            //                     attrib.texcoords[2 * idx.texcoord_index + 1]);
-            //         }
-            //         Vertex vertex(pos, normal, uvs);
-            //         if(uniqueVertices.count(vertex) == 0) {
-            //             uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
-            //             vertices.push_back(vertex);
-            //         }
-            //         indices.push_back(uniqueVertices[vertex]);
-            //     }
-            // }
-
-            for(const auto &mat : objMaterials) {
-                glm::vec3 diffuseColor{
-                    mat.diffuse[0],
-                    mat.diffuse[1],
-                    mat.diffuse[2]
-                };
-                TexturePtr diffuseTexture = nullptr;
-                if(!mat.diffuse_texname.empty()){
-                    diffuseTexture = std::make_shared<Texture>(TextureType::DIFFUSE, mat.diffuse_texname);
-                }
-                glm::vec3 specularColor{
-                    mat.specular[0],
-                    mat.specular[1],
-                    mat.specular[2]
-                };
-                TexturePtr specularTexture = nullptr;
-                if(!mat.specular_texname.empty()){
-                    specularTexture = std::make_shared<Texture>(TextureType::SPECULAR, mat.specular_texname);
-                }
-                glm::vec3 ambientColor{
-                    mat.ambient[0],
-                    mat.ambient[1],
-                    mat.ambient[2]
-                };
-                TexturePtr ambientTexture = nullptr;
-                if(!mat.ambient_texname.empty()){
-                    ambientTexture = std::make_shared<Texture>(TextureType::AMBIENT, mat.ambient_texname);
-                }
-                Material material(
-                    diffuseColor,
-                    diffuseTexture,
-                    specularColor,
-                    specularTexture,
-                    ambientColor,
-                    ambientTexture
+            if(objMaterials.empty()) {
+                material = std::make_shared<Material>(
+                    glm::vec3(0.5, 0.5, 0.5),
+                    nullptr,
+                    glm::vec3(0.5, 0.5, 0.5),
+                    nullptr,
+                    glm::vec3(0.5, 0.5, 0.5),
+                    nullptr
                 );
-            }
+            } else {
+                const auto &mat = objMaterials[0];
+                    glm::vec3 diffuseColor{
+                        mat.diffuse[0],
+                        mat.diffuse[1],
+                        mat.diffuse[2]
+                    };
+                    TexturePtr diffuseTexture = nullptr;
+                    if(!mat.diffuse_texname.empty()){
+                        diffuseTexture = std::make_shared<Texture>(TextureType::DIFFUSE, mp + mat.diffuse_texname);
+                    }
+                    glm::vec3 specularColor{
+                        mat.specular[0],
+                        mat.specular[1],
+                        mat.specular[2]
+                    };
+                    TexturePtr specularTexture = nullptr;
+                    if(!mat.specular_texname.empty()){
+                        specularTexture = std::make_shared<Texture>(TextureType::SPECULAR, mp + mat.specular_texname);
+                    }
+                    glm::vec3 ambientColor{
+                        mat.ambient[0],
+                        mat.ambient[1],
+                        mat.ambient[2]
+                    };
+                    TexturePtr ambientTexture = nullptr;
+                    if(!mat.ambient_texname.empty()){
+                        ambientTexture = std::make_shared<Texture>(TextureType::AMBIENT, mp + mat.ambient_texname);
+                    }
+                    material = std::make_shared<Material>(
+                        diffuseColor,
+                        diffuseTexture,
+                        specularColor,
+                        specularTexture,
+                        ambientColor,
+                        ambientTexture
+                    );
+                }
             return true;
         }
   

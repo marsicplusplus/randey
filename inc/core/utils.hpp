@@ -16,9 +16,8 @@ namespace MeshLoader
         const std::string &mp,
         std::vector<Vertex> &vertices,
         std::vector<int> &indices,
-        std::vector<Material> &materials,
-        std::vector<int> &materialIdxs);
-} // namespace MeshLoader
+        MaterialPtr &material);
+}; // namespace MeshLoader
 
 
 #endif
