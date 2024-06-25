@@ -10,28 +10,17 @@
 
 class Material {
     public:
-        Material(
-            glm::vec3 diffuse, 
-            TexturePtr diffuseTex,
-            glm::vec3 specular, 
-            TexturePtr specularTex,
-            glm::vec3 ambient,
-            TexturePtr ambientTex) :
-            mDiffuseColor(diffuse), mSpecularColor(specular), mAmbientColor(ambient) {
+        Material(TexturePtr diffuseTex, TexturePtr specularTex) {
                     mTextures[TextureType::SPECULAR] = specularTex;
-                    mTextures[TextureType::AMBIENT] = ambientTex;
                     mTextures[TextureType::DIFFUSE] = diffuseTex;
             }
 
-        void bindMaterial(Shader &shader);
+        void bindMaterial(ShaderPtr &shader);
         void setTexture(TextureType tType, std::shared_ptr<Texture> t) {
             mTextures[tType] = t;
         }
 
-        glm::vec3 mDiffuseColor;
     private:
-        glm::vec3 mSpecularColor;
-        glm::vec3 mAmbientColor;
         std::unordered_map<TextureType, std::shared_ptr<Texture>> mTextures;
 };
 

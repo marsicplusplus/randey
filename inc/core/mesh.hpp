@@ -31,7 +31,7 @@ class Mesh {
                 const std::vector<int> &indices,
                 MaterialPtr mat,
                 const Transform &t = Transform());
-        void draw(Shader &shaderProgram);
+        void draw(ShaderPtr &shaderProgram);
         void update(float dt);
 
         Transform mTransform;

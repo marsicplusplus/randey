@@ -6,6 +6,7 @@
 
 #include "core/camera.hpp"
 #include "core/mesh.hpp"
+#include "buffers/gbuffer.hpp"
 
 #include <memory>
 
@@ -21,9 +22,15 @@ class Renderer {
         GLFWwindow *mWindow;
         uint32_t mWidth, mHeight;
         std::unique_ptr<Camera> mCamera;
+        std::vector<Mesh> mMeshes;
+        ShaderPtr mGeometryShader;
+        GBuffer mGBuffer;
+        glm::mat4 mProjection;
 
         static void framebufferSizeCB(GLFWwindow *window, int width, int height);
         void processInput();
+        void geometryPass();
+        void lightPass();
 
         // Mesh loadMesh();
 };

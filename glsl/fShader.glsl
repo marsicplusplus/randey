@@ -2,7 +2,6 @@
 
 struct Material {
     sampler2D diffuseTexture;
-    sampler2D ambientTexture;
     sampler2D specularTexture;
     float shininess;
 };

@@ -5,6 +5,7 @@
 
 #include <string>
 #include <map>
+#include <memory>
 
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/type_ptr.hpp"
@@ -29,5 +30,7 @@ class Shader {
     private:
         std::map<uint32_t, uint32_t> mShaders;
 };
+
+typedef std::shared_ptr<Shader> ShaderPtr;
 
 #endif

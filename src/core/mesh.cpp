@@ -42,7 +42,7 @@ void Mesh::setup() {
     glBindVertexArray(0);
 }
 
-void Mesh::draw(Shader &shaderProgram) {
+void Mesh::draw(ShaderPtr &shaderProgram) {
     // uint32_t diffuseNr = 1;
     // uint32_t specularNr = 1;
     // for(uint32_t i = 0; i < mTextures.size(); i++) {
@@ -61,8 +61,8 @@ void Mesh::draw(Shader &shaderProgram) {
     // }
     // glActiveTexture(0);
     mMat->bindMaterial(shaderProgram);
-    shaderProgram.setMat4("model", mTransform.getMatrix());
-    shaderProgram.setMat4("modelTransposeInverse", mTransform.getTransposeInverse());
+    shaderProgram->setMat4("model", mTransform.getMatrix());
+    shaderProgram->setMat4("modelTransposeInverse", mTransform.getTransposeInverse());
     glBindVertexArray(mVAO);
     glDrawElements(GL_TRIANGLES, mIndices.size(), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);

@@ -1,3 +1,6 @@
 build/
 models/
 textures/
+.vs/
+.vscode/
+out/

@@ -74,49 +74,22 @@ namespace MeshLoader
             }
             if(objMaterials.empty()) {
                 material = std::make_shared<Material>(
-                    glm::vec3(0.5, 0.5, 0.5),
                     nullptr,
-                    glm::vec3(0.5, 0.5, 0.5),
-                    nullptr,
-                    glm::vec3(0.5, 0.5, 0.5),
                     nullptr
                 );
             } else {
                 const auto &mat = objMaterials[0];
-                    glm::vec3 diffuseColor{
-                        mat.diffuse[0],
-                        mat.diffuse[1],
-                        mat.diffuse[2]
-                    };
                     TexturePtr diffuseTexture = nullptr;
                     if(!mat.diffuse_texname.empty()){
                         diffuseTexture = std::make_shared<Texture>(TextureType::DIFFUSE, mp + mat.diffuse_texname);
                     }
-                    glm::vec3 specularColor{
-                        mat.specular[0],
-                        mat.specular[1],
-                        mat.specular[2]
-                    };
                     TexturePtr specularTexture = nullptr;
                     if(!mat.specular_texname.empty()){
                         specularTexture = std::make_shared<Texture>(TextureType::SPECULAR, mp + mat.specular_texname);
                     }
-                    glm::vec3 ambientColor{
-                        mat.ambient[0],
-                        mat.ambient[1],
-                        mat.ambient[2]
-                    };
-                    TexturePtr ambientTexture = nullptr;
-                    if(!mat.ambient_texname.empty()){
-                        ambientTexture = std::make_shared<Texture>(TextureType::AMBIENT, mp + mat.ambient_texname);
-                    }
                     material = std::make_shared<Material>(
-                        diffuseColor,
                         diffuseTexture,
-                        specularColor,
-                        specularTexture,
-                        ambientColor,
-                        ambientTexture
+                        specularTexture
                     );
                 }
             return true;

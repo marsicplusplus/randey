@@ -79,15 +79,22 @@ void Shader::link() {
                   << infoLog << std::endl;
     }
 
-    glDetachShader(mID, mShaders[GL_VERTEX_SHADER]);
-    glDetachShader(mID, mShaders[GL_FRAGMENT_SHADER]);
-    glDetachShader(mID, mShaders[GL_COMPUTE_SHADER]);
-    glDetachShader(mID, mShaders[GL_GEOMETRY_SHADER]);
-
-    glDeleteShader(mShaders[GL_VERTEX_SHADER]);
-    glDeleteShader(mShaders[GL_FRAGMENT_SHADER]);
-    glDeleteShader(mShaders[GL_COMPUTE_SHADER]);
-    glDeleteShader(mShaders[GL_GEOMETRY_SHADER]);
+    if (mShaders[GL_FRAGMENT_SHADER] != 0) {
+        glDetachShader(mID, mShaders[GL_VERTEX_SHADER]);
+        glDeleteShader(mShaders[GL_VERTEX_SHADER]);
+    }
+    if (mShaders[GL_FRAGMENT_SHADER] != 0) {
+        glDetachShader(mID, mShaders[GL_FRAGMENT_SHADER]);
+        glDeleteShader(mShaders[GL_FRAGMENT_SHADER]);
+    }
+    if (mShaders[GL_COMPUTE_SHADER] != 0) {
+        glDetachShader(mID, mShaders[GL_COMPUTE_SHADER]);
+        glDeleteShader(mShaders[GL_COMPUTE_SHADER]);
+    }
+    if (mShaders[GL_GEOMETRY_SHADER] != 0) {
+        glDetachShader(mID, mShaders[GL_GEOMETRY_SHADER]);
+        glDeleteShader(mShaders[GL_GEOMETRY_SHADER]);
+    }
 }
 
 void Shader::use() {
