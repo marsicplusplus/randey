@@ -6,7 +6,7 @@
 
 Mesh::Mesh(const std::vector<Vertex> &vertices, 
             const std::vector<int> &indices,
-            MaterialPtr mat,
+            size_t mat,
             const Transform &t) :
     mVertices(vertices),
     mIndices(indices),
@@ -60,7 +60,6 @@ void Mesh::draw(ShaderPtr &shaderProgram) {
     //     glBindTexture(GL_TEXTURE_2D, mTextures[i].getId());
     // }
     // glActiveTexture(0);
-    mMat->bindMaterial(shaderProgram);
     shaderProgram->setMat4("model", mTransform.getMatrix());
     shaderProgram->setMat4("modelTransposeInverse", mTransform.getTransposeInverse());
     glBindVertexArray(mVAO);

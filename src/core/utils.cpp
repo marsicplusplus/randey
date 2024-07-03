@@ -19,11 +19,24 @@ namespace std {
 
 namespace MeshLoader
 {
-    bool LoadMesh(const std::string &fp,
-        const std::string &mp, 
-        std::vector<Vertex> &vertices,
-        std::vector<int> &indices,
-        MaterialPtr &material) {
+    MaterialPtr parseMaterial(const std::string &mp, const tinyobj::material_t &mat) {
+        TexturePtr diffuseTexture = nullptr;
+        if (!mat.diffuse_texname.empty())
+        {
+            diffuseTexture = std::make_shared<Texture>(TextureType::DIFFUSE, mp + mat.diffuse_texname);
+        }
+        TexturePtr specularTexture = nullptr;
+        if (!mat.specular_texname.empty())
+        {
+            specularTexture = std::make_shared<Texture>(TextureType::SPECULAR, mp + mat.specular_texname);
+        }
+        return std::make_shared<Material>(
+            diffuseTexture,
+            specularTexture);
+    }
+
+    ModelPtr LoadModel(const std::string &fp,
+        const std::string &mp) {
             tinyobj::attrib_t attrib;
             std::vector<tinyobj::shape_t> shapes;
             std::vector<tinyobj::material_t> objMaterials;
@@ -33,11 +46,14 @@ namespace MeshLoader
             fp.c_str(), mp.c_str());
             if(!err.empty() || !success) {
                 std::cerr << err << std::endl;
-                return false;
+                return nullptr;
             }
-            std::unordered_map<Vertex, uint32_t> uniqueVertices;
+            std::vector<Mesh> meshes;
             for (const auto& shape : shapes) {
-                int materialId = -1;
+                std::unordered_map<Vertex, uint32_t> uniqueVertices;
+                std::vector<Vertex> vertices;
+                std::vector<int> indices;
+                size_t materialId;
                 size_t index_offset = 0;
                 for (size_t f = 0; f < shape.mesh.num_face_vertices.size(); ++f) {
                     auto fv = static_cast<size_t>(shape.mesh.num_face_vertices[f]);
@@ -71,28 +87,21 @@ namespace MeshLoader
                     }
                     index_offset += fv;
                 }
-            }
-            if(objMaterials.empty()) {
-                material = std::make_shared<Material>(
-                    nullptr,
-                    nullptr
-                );
-            } else {
-                const auto &mat = objMaterials[0];
-                    TexturePtr diffuseTexture = nullptr;
-                    if(!mat.diffuse_texname.empty()){
-                        diffuseTexture = std::make_shared<Texture>(TextureType::DIFFUSE, mp + mat.diffuse_texname);
-                    }
-                    TexturePtr specularTexture = nullptr;
-                    if(!mat.specular_texname.empty()){
-                        specularTexture = std::make_shared<Texture>(TextureType::SPECULAR, mp + mat.specular_texname);
-                    }
-                    material = std::make_shared<Material>(
-                        diffuseTexture,
-                        specularTexture
-                    );
+                if(shape.mesh.material_ids[0] < 0) {
+                    materialId = 0;
+                } else {
+                    materialId = shape.mesh.material_ids[0] + 1;
                 }
-            return true;
+                Mesh mesh(vertices, indices, materialId);
+                meshes.push_back(mesh);
+            } 
+            std::vector<MaterialPtr> materials;
+            materials.push_back(std::make_shared<Material>(nullptr, nullptr));
+            for(const auto &mat : objMaterials) {
+                materials.push_back(
+                    parseMaterial(mp, mat)
+                );
+            }
+            return std::make_shared<Model>(meshes, materials);
         }
-  
 } // namespace MeshLoader

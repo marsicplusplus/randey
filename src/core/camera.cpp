@@ -16,7 +16,7 @@ glm::mat4  Camera::getViewMatrix() const {
 }
 
 void Camera::update(float dt) {
-    const float cameraSpeed = 1.5f * dt; // adjust accordingly
+    const float cameraSpeed = 30.5f * dt; // adjust accordingly
     if (InputManager::Instance()->isKeyDown(GLFW_KEY_W))
         mPos += cameraSpeed * mFront;
     if (InputManager::Instance()->isKeyDown(GLFW_KEY_S))

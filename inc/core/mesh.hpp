@@ -29,7 +29,7 @@ class Mesh {
     public:
         Mesh(const std::vector<Vertex> &vertices, 
                 const std::vector<int> &indices,
-                MaterialPtr mat,
+                size_t materialId,
                 const Transform &t = Transform());
         void draw(ShaderPtr &shaderProgram);
         void update(float dt);
@@ -39,15 +39,13 @@ class Mesh {
         void setup();
 
         unsigned int mVAO, mVBO, mEBO;
-        MaterialPtr mMat;
+        unsigned int mMat;
 
         std::vector<Vertex> mVertices;
         std::vector<int> mIndices;
 
-
+        friend class Model;
 };
-
-
 
 class CubeMesh : public Mesh {
     CubeMesh();

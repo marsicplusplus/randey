@@ -14,6 +14,7 @@ class GBuffer {
         bool init(int w, int h);
 
         void bindGeometryPass();
+        void bindLightPass();
 
     public:
         unsigned int mFbo;
