@@ -7,8 +7,11 @@
 class Model {
     public:
         Model(std::vector<Mesh> meshes, std::vector<MaterialPtr> mats) : mMeshes(meshes), mMaterials(mats) {}
+        Transform& getTransform() { return mTransform; }
 
         void draw(ShaderPtr &shaderProgram) {
+            shaderProgram->setMat4("model", mTransform.getMatrix());
+            shaderProgram->setMat4("modelTransposeInverse", mTransform.getTransposeInverse());
             for(auto &mesh : mMeshes) {
                 mMaterials[mesh.mMat]->bindMaterial(shaderProgram);
                 mesh.draw(shaderProgram);
@@ -16,6 +19,7 @@ class Model {
         }
 
     private:
+        Transform mTransform;
         std::vector<Mesh> mMeshes;
         std::vector<MaterialPtr> mMaterials;
 };

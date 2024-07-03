@@ -29,12 +29,10 @@ class Mesh {
     public:
         Mesh(const std::vector<Vertex> &vertices, 
                 const std::vector<int> &indices,
-                size_t materialId,
-                const Transform &t = Transform());
+                size_t materialId);
         void draw(ShaderPtr &shaderProgram);
         void update(float dt);
 
-        Transform mTransform;
     private:
         void setup();
 

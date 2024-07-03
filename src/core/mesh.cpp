@@ -6,11 +6,9 @@
 
 Mesh::Mesh(const std::vector<Vertex> &vertices, 
             const std::vector<int> &indices,
-            size_t mat,
-            const Transform &t) :
+            size_t mat) :
     mVertices(vertices),
     mIndices(indices),
-    mTransform(t),
     mMat(mat) {
         setup();
 }
@@ -43,25 +41,6 @@ void Mesh::setup() {
 }
 
 void Mesh::draw(ShaderPtr &shaderProgram) {
-    // uint32_t diffuseNr = 1;
-    // uint32_t specularNr = 1;
-    // for(uint32_t i = 0; i < mTextures.size(); i++) {
-    //     glActiveTexture(GL_TEXTURE0 + i);
-    //     std::string number;
-    //     std::string name;
-    //     if(mTextures[i].getType() == TextureType::DIFFUSE) {
-    //         name = "texture_diffuse";
-    //         number = std::to_string(diffuseNr++);
-    //     } else {
-    //         name = "texture_specular";
-    //         number = std::to_string(specularNr++);
-    //     }
-    //     shaderProgram.setInt(("material." + name + number).c_str(), i);
-    //     glBindTexture(GL_TEXTURE_2D, mTextures[i].getId());
-    // }
-    // glActiveTexture(0);
-    shaderProgram->setMat4("model", mTransform.getMatrix());
-    shaderProgram->setMat4("modelTransposeInverse", mTransform.getTransposeInverse());
     glBindVertexArray(mVAO);
     glDrawElements(GL_TRIANGLES, mIndices.size(), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);

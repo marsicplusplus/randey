@@ -34,6 +34,7 @@ set( SRC
 	 src/core/material.cpp
 	 src/core/texture.cpp
 	 src/lights/point_light.cpp
+	 src/lights/directional_light.cpp
 	 src/buffers/gbuffer.cpp
 	 src/managers/input_manager.cpp
 	)

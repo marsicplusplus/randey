@@ -8,6 +8,7 @@
 #include "core/mesh.hpp"
 #include "core/model.hpp"
 #include "lights/point_light.hpp"
+#include "lights/directional_light.hpp"
 #include "buffers/gbuffer.hpp"
 
 #include <memory>
@@ -26,8 +27,10 @@ class Renderer {
         std::unique_ptr<Camera> mCamera;
         std::vector<ModelPtr> mModels;
         std::vector<PointLightPtr> mPointLights;
+        std::vector<DirectionalLightPtr> mDirLights;
         ShaderPtr mGeometryShader;
         ShaderPtr mPointLightsShader;
+        ShaderPtr mDirectionalLightsShader;
         GBuffer mGBuffer;
         glm::mat4 mProjection;
 
@@ -40,6 +43,7 @@ class Renderer {
         void geometryPass();
         void lightPass();
         void pointLightsPass();
+        void directionalLightsPass();
 
         // Mesh loadMesh();
 };

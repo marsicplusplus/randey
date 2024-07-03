@@ -9,19 +9,15 @@ layout(binding = 2) uniform sampler2D gAlbedoSpec;
 uniform vec2 gScreenSize;
 uniform vec3 gViewPos;
 
-struct PointLight {
-    vec3 position;  
+struct DirectionalLight {
+    vec3 direction;  
   
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
-	
-    float constant;
-    float linear;
-    float quadratic;
 };
 
-uniform PointLight pointLight;
+uniform DirectionalLight dirLight;
 
 void main() {             
 
@@ -36,24 +32,18 @@ void main() {
     vec3 viewDir = normalize(gViewPos - FragPos);
     
     // Ambient
-    vec3 ambient = Albedo * pointLight.ambient; 
+    vec3 ambient = Albedo * dirLight.ambient; 
 
     // Diffuse
-    vec3 lightDir = normalize(pointLight.position - FragPos);
-    vec3 diffuse = max(dot(Normal, lightDir), 0.0) * Albedo * pointLight.diffuse;
+    vec3 lightDir = normalize(-dirLight.direction);
+    vec3 diffuse = max(dot(Normal, lightDir), 0.0) * Albedo * dirLight.diffuse;
 
     // Specular
     vec3 reflectedDir = reflect(-lightDir, Normal);
     float spec = pow(max(dot(viewDir, reflectedDir), 0.0), 16.0);
-    vec3 specular = spec * pointLight.specular * Specular;
-
-
-    // Attenuation
-    float dist = length(pointLight.position - FragPos);
-    float attenuation = 1.0 / (pointLight.constant + pointLight.linear * dist + 
-                    pointLight.quadratic * (dist * dist)); 
+    vec3 specular = spec * dirLight.specular * Specular;
 
     vec3 ret = ambient + diffuse + specular;
         
-    FragColor = vec4(ret * attenuation, 1.0);
-}  
+    FragColor = vec4(ret, 1.0);
+}

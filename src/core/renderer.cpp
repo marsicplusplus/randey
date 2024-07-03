@@ -108,23 +108,32 @@ bool Renderer::init() {
     #endif
 
     mCamera = std::make_unique<Camera>(glm::vec3(0.0, 2.0, 5.0), glm::vec3(0.0, 1.0, 0.0));
-    mProjection = glm::perspective(glm::radians(70.0f), (float)mWidth/mHeight, 0.1f, 100.0f);
+    mProjection = glm::perspective(glm::radians(70.0f), (float)mWidth/mHeight, 0.1f, 150.0f);
 
-    // ModelPtr rabbit = MeshLoader::LoadModel("C:/Users/loren/OneDrive/Desktop/Code/Randey/models/sponza/sponza.obj", "C:/Users/loren/OneDrive/Desktop/Code/Randey/models/sponza/");
-    ModelPtr rabbit = MeshLoader::LoadModel("C:/Users/loren/OneDrive/Desktop/Code/Randey/models/backpack.obj", "C:/Users/loren/OneDrive/Desktop/Code/Randey/models/");
-    mModels.push_back(rabbit);
+    ModelPtr sponza = MeshLoader::LoadModel("C:/Users/loren/OneDrive/Desktop/Code/Randey/models/sponza/sponza.obj", "C:/Users/loren/OneDrive/Desktop/Code/Randey/models/sponza/");
+    sponza->getTransform().scale(1.0f/20.0f);
+    mModels.push_back(sponza);
+    ModelPtr backpack = MeshLoader::LoadModel("C:/Users/loren/OneDrive/Desktop/Code/Randey/models/backpack.obj", "C:/Users/loren/OneDrive/Desktop/Code/Randey/models/");
+    backpack->getTransform().translate(0.0, 1.4, 0.0);
+    backpack->getTransform().scale(0.8f);
+    mModels.push_back(backpack);
 
     mPointLights.push_back(std::make_shared<PointLight>(
         glm::vec3(4.0, 0.0, -1.0),      // Position
         glm::vec3(0.2f, 0.2f, 0.2f),    // Ambient
-        glm::vec3(1.5f, 1.5f, 1.5f)     // Diffuse
+        glm::vec3(0.5f, 0.5f, 0.5f)     // Diffuse
     ));
     mPointLights.push_back(std::make_shared<PointLight>(
         glm::vec3(-4.0, 4.0, -1.0),      // Position
         glm::vec3(0.2f, 0.2f, 0.2f),    // Ambient
-        glm::vec3(5.5f, 1.5f, 1.5f)     // Diffuse
+        glm::vec3(1.0f, 0.5f, 0.5f)     // Diffuse
     ));
 
+    mDirLights.push_back(std::make_shared<DirectionalLight>(
+        glm::vec3(-0.2f, -1.0f, -0.3f),    // direction
+        glm::vec3(0.2, 0.2, 0.2),    // Ambient
+        glm::vec3(0.4, 0.8, 0.8)     // Diffuse
+    ));
 
     mGeometryShader = std::make_shared<Shader>();
     mGeometryShader->attachShader("C:/Users/loren/OneDrive/Desktop/Code/Randey/glsl/geometry_pass/vShader.glsl", GL_VERTEX_SHADER);
@@ -135,6 +144,12 @@ bool Renderer::init() {
     mPointLightsShader->attachShader("C:/Users/loren/OneDrive/Desktop/Code/Randey/glsl/light_pass/vShader.glsl", GL_VERTEX_SHADER);
     mPointLightsShader->attachShader("C:/Users/loren/OneDrive/Desktop/Code/Randey/glsl/light_pass/fShader_point_light.glsl", GL_FRAGMENT_SHADER);
     mPointLightsShader->link();
+
+    mDirectionalLightsShader = std::make_shared<Shader>();
+    mDirectionalLightsShader->attachShader("C:/Users/loren/OneDrive/Desktop/Code/Randey/glsl/light_pass/vShader.glsl", GL_VERTEX_SHADER);
+    mDirectionalLightsShader->attachShader("C:/Users/loren/OneDrive/Desktop/Code/Randey/glsl/light_pass/fShader_dir_light.glsl", GL_FRAGMENT_SHADER);
+    mDirectionalLightsShader->link();
+
 
     mGBuffer.init(mWidth, mHeight);
 
@@ -184,6 +199,7 @@ void Renderer::lightPass() {
     mGBuffer.bindLightPass();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     pointLightsPass();
+    directionalLightsPass();
 }
 
 void Renderer::pointLightsPass() {
@@ -192,6 +208,17 @@ void Renderer::pointLightsPass() {
     mPointLightsShader->setVec3("gViewPos", mCamera->getPos());
     for(auto &l : mPointLights) {
         l->bindLight(mPointLightsShader);       
+        glBindVertexArray(mQuadVAO);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    }
+}
+
+void Renderer::directionalLightsPass() {
+    mDirectionalLightsShader->use();
+    mDirectionalLightsShader->setVec2("gScreenSize", mWidth, mHeight);
+    mDirectionalLightsShader->setVec3("gViewPos", mCamera->getPos());
+    for(auto &l : mDirLights) {
+        l->bindLight(mDirectionalLightsShader);       
         glBindVertexArray(mQuadVAO);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     }

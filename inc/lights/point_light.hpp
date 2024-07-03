@@ -22,8 +22,8 @@ class PointLight {
         glm::vec3 mSpecular;
 
         float mConstant = 1.0;
-        float mLinear = 0.7;
-        float mQuadratic = 1.8;
+        float mLinear = 0.045;
+        float mQuadratic = 0.0075;
 
 };
 
