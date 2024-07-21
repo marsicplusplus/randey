@@ -5,6 +5,7 @@ enum GBufferTexture {
     POSITION = 0,
     NORMAL = 1,
     DIFFUSE = 2,
+    GBUFFERTEXTURE_COUNT = 3,
 };
 
 class GBuffer {
@@ -18,7 +19,7 @@ class GBuffer {
 
     public:
         unsigned int mFbo;
-        unsigned int mTextures[3];
+        unsigned int mTextures[GBUFFERTEXTURE_COUNT];
         unsigned int mDepth;
 };
 

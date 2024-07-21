@@ -14,7 +14,7 @@
 namespace MeshLoader
 {
     ModelPtr LoadModel(const std::string &fp, 
-        const std::string &mp);
+        const std::string &mp, bool flipTexture = false);
 }; // namespace MeshLoader
 
 

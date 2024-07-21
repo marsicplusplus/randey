@@ -7,6 +7,8 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 
+#include "managers/resource_manager.hpp"
+
 namespace std {
     template<> struct hash<Vertex> {
         size_t operator()(Vertex const& vertex) const {
@@ -19,24 +21,31 @@ namespace std {
 
 namespace MeshLoader
 {
-    MaterialPtr parseMaterial(const std::string &mp, const tinyobj::material_t &mat) {
-        TexturePtr diffuseTexture = nullptr;
+    MaterialPtr parseMaterial(const std::string &mp, const tinyobj::material_t &mat, bool flipTexture) {
+        unsigned int diffuseTexture = 0;
         if (!mat.diffuse_texname.empty())
         {
-            diffuseTexture = std::make_shared<Texture>(TextureType::DIFFUSE, mp + mat.diffuse_texname);
+            diffuseTexture = ResourceManager::Instance()->setTexture(mp + mat.diffuse_texname, flipTexture);
         }
-        TexturePtr specularTexture = nullptr;
+        unsigned int specularTexture = 0;
         if (!mat.specular_texname.empty())
         {
-            specularTexture = std::make_shared<Texture>(TextureType::SPECULAR, mp + mat.specular_texname);
+            specularTexture = ResourceManager::Instance()->setTexture(mp + mat.specular_texname, flipTexture);
+        }
+        unsigned int ambientTexture = 0;
+        if (!mat.ambient_texname.empty())
+        {
+            ambientTexture = ResourceManager::Instance()->setTexture(mp + mat.ambient_texname, flipTexture);
         }
         return std::make_shared<Material>(
             diffuseTexture,
-            specularTexture);
+            specularTexture,
+            ambientTexture);
     }
 
     ModelPtr LoadModel(const std::string &fp,
-        const std::string &mp) {
+        const std::string &mp,
+        bool flipTexture) {
             tinyobj::attrib_t attrib;
             std::vector<tinyobj::shape_t> shapes;
             std::vector<tinyobj::material_t> objMaterials;
@@ -96,10 +105,10 @@ namespace MeshLoader
                 meshes.push_back(mesh);
             } 
             std::vector<MaterialPtr> materials;
-            materials.push_back(std::make_shared<Material>(nullptr, nullptr));
+            materials.push_back(std::make_shared<Material>(0, 0, 0));
             for(const auto &mat : objMaterials) {
                 materials.push_back(
-                    parseMaterial(mp, mat)
+                    parseMaterial(mp, mat, flipTexture)
                 );
             }
             return std::make_shared<Model>(meshes, materials);

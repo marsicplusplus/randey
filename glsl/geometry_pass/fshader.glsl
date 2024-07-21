@@ -10,6 +10,7 @@ in vec3 fNorm;
 struct Material {
     sampler2D diffuseTexture;
     sampler2D specularTexture;
+    sampler2D ambientTexture;
     float shininess;
 };
 
@@ -25,4 +26,5 @@ void main()
     gAlbedoSpec.rgb = texture(material.diffuseTexture, fUv).rgb;
     // store specular intensity in gAlbedoSpec's alpha component
     gAlbedoSpec.a = texture(material.specularTexture, fUv).r;
+    // gAmbient.rgb = texture(material.ambientTexture, fUv).rgb;
 }  

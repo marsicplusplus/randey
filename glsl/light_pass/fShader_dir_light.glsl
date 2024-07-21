@@ -20,7 +20,6 @@ struct DirectionalLight {
 uniform DirectionalLight dirLight;
 
 void main() {             
-
     vec2 TexCoords = gl_FragCoord.xy / gScreenSize;
 
     // retrieve data from G-buffer
@@ -28,11 +27,12 @@ void main() {
     vec3 Normal = texture(gNormal, TexCoords).rgb;
     vec3 Albedo = texture(gAlbedoSpec, TexCoords).rgb;
     float Specular = texture(gAlbedoSpec, TexCoords).a;
+    vec3 Ambient = Albedo.rgb;
 
     vec3 viewDir = normalize(gViewPos - FragPos);
     
     // Ambient
-    vec3 ambient = Albedo * dirLight.ambient; 
+    vec3 ambient = Ambient * dirLight.ambient; 
 
     // Diffuse
     vec3 lightDir = normalize(-dirLight.direction);

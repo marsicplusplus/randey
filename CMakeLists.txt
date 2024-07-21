@@ -37,6 +37,7 @@ set( SRC
 	 src/lights/directional_light.cpp
 	 src/buffers/gbuffer.cpp
 	 src/managers/input_manager.cpp
+	 src/managers/resource_manager.cpp
 	)
 
 add_executable( Randey ${SRC})

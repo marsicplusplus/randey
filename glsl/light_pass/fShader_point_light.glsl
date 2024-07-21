@@ -31,12 +31,13 @@ void main() {
     vec3 FragPos = texture(gPosition, TexCoords).rgb;
     vec3 Normal = texture(gNormal, TexCoords).rgb;
     vec3 Albedo = texture(gAlbedoSpec, TexCoords).rgb;
+    vec3 Ambient = Albedo;
     float Specular = texture(gAlbedoSpec, TexCoords).a;
 
     vec3 viewDir = normalize(gViewPos - FragPos);
     
     // Ambient
-    vec3 ambient = Albedo * pointLight.ambient; 
+    vec3 ambient = Ambient * pointLight.ambient; 
 
     // Diffuse
     vec3 lightDir = normalize(pointLight.position - FragPos);

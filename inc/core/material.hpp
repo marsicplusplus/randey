@@ -10,18 +10,19 @@
 
 class Material {
     public:
-        Material(TexturePtr diffuseTex, TexturePtr specularTex) {
+        Material(unsigned int diffuseTex, unsigned int specularTex, unsigned int ambientTex) {
                     mTextures[TextureType::SPECULAR] = specularTex;
                     mTextures[TextureType::DIFFUSE] = diffuseTex;
+                    mTextures[TextureType::AMBIENT] = ambientTex;
             }
 
         void bindMaterial(ShaderPtr &shader);
-        void setTexture(TextureType tType, std::shared_ptr<Texture> t) {
+        void setTexture(TextureType tType, unsigned int t) {
             mTextures[tType] = t;
         }
 
     private:
-        std::unordered_map<TextureType, std::shared_ptr<Texture>> mTextures;
+        std::unordered_map<TextureType, unsigned int> mTextures;
 };
 
 typedef std::shared_ptr<Material> MaterialPtr;

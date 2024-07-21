@@ -110,10 +110,10 @@ bool Renderer::init() {
     mCamera = std::make_unique<Camera>(glm::vec3(0.0, 2.0, 5.0), glm::vec3(0.0, 1.0, 0.0));
     mProjection = glm::perspective(glm::radians(70.0f), (float)mWidth/mHeight, 0.1f, 150.0f);
 
-    ModelPtr sponza = MeshLoader::LoadModel("C:/Users/loren/OneDrive/Desktop/Code/Randey/models/sponza/sponza.obj", "C:/Users/loren/OneDrive/Desktop/Code/Randey/models/sponza/");
+    ModelPtr sponza = MeshLoader::LoadModel("C:/Users/loren/OneDrive/Desktop/Code/Randey/models/sponza/sponza.obj", "C:/Users/loren/OneDrive/Desktop/Code/Randey/models/sponza/", true);
     sponza->getTransform().scale(1.0f/20.0f);
     mModels.push_back(sponza);
-    ModelPtr backpack = MeshLoader::LoadModel("C:/Users/loren/OneDrive/Desktop/Code/Randey/models/backpack.obj", "C:/Users/loren/OneDrive/Desktop/Code/Randey/models/");
+    ModelPtr backpack = MeshLoader::LoadModel("C:/Users/loren/OneDrive/Desktop/Code/Randey/models/backpack.obj", "C:/Users/loren/OneDrive/Desktop/Code/Randey/models/", false);
     backpack->getTransform().translate(0.0, 1.4, 0.0);
     backpack->getTransform().scale(0.8f);
     mModels.push_back(backpack);
@@ -132,7 +132,7 @@ bool Renderer::init() {
     mDirLights.push_back(std::make_shared<DirectionalLight>(
         glm::vec3(-0.2f, -1.0f, -0.3f),    // direction
         glm::vec3(0.2, 0.2, 0.2),    // Ambient
-        glm::vec3(0.4, 0.8, 0.8)     // Diffuse
+        glm::vec3(0.4, 0.3, 0.3)     // Diffuse
     ));
 
     mGeometryShader = std::make_shared<Shader>();
