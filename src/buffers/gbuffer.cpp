@@ -14,6 +14,8 @@ GBuffer::GBuffer() {
 }
 
 bool GBuffer::init(int w, int h) {
+    mW = w;
+    mH = h;
     glCreateFramebuffers(1, &mFbo);
 
     glCreateTextures(GL_TEXTURE_2D, GBUFFERTEXTURE_COUNT, mTextures);
@@ -55,8 +57,11 @@ void GBuffer::bindGeometryPass() {
 }
 
 void GBuffer::bindLightPass() {
-    // glBindFramebuffer(GL_READ_FRAMEBUFFER, mFbo);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, mFbo);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    glBlitFramebuffer(0, 0,
+    mW, mH, 0, 0, mW, mH, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     for(unsigned int i = 0; i < GBUFFERTEXTURE_COUNT; i++) {
         glBindTextureUnit(i, mTextures[i]);
     }

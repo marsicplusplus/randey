@@ -21,6 +21,9 @@ class GBuffer {
         unsigned int mFbo;
         unsigned int mTextures[GBUFFERTEXTURE_COUNT];
         unsigned int mDepth;
+
+    private:
+        int mW, mH;
 };
 
 #endif
