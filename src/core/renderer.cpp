@@ -95,6 +95,8 @@ bool Renderer::init() {
     glViewport(0, 0, mWidth, mHeight);
     glfwSetFramebufferSizeCallback(mWindow, Renderer::framebufferSizeCB);
 
+    glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);  
+
     glfwSetKeyCallback(this->mWindow, 
     [](GLFWwindow* w, int key, int scancode, int action, int mods) {
 		InputManager::Instance()->setKeyValue(key, action != GLFW_RELEASE);
@@ -119,7 +121,7 @@ bool Renderer::init() {
     mModels.push_back(backpack);
 
     mPointLights.push_back(std::make_shared<PointLight>(
-        glm::vec3(4.0, 0.0, -1.0),      // Position
+        glm::vec3(4.0, 2.0, -1.0),      // Position
         glm::vec3(0.2f, 0.2f, 0.2f),    // Ambient
         glm::vec3(0.5f, 0.5f, 0.5f)     // Diffuse
     ));
@@ -129,11 +131,11 @@ bool Renderer::init() {
         glm::vec3(1.0f, 0.5f, 0.5f)     // Diffuse
     ));
 
-    mDirLights.push_back(std::make_shared<DirectionalLight>(
-        glm::vec3(-0.2f, -1.0f, -0.3f),    // direction
-        glm::vec3(0.2, 0.2, 0.2),    // Ambient
-        glm::vec3(0.4, 0.3, 0.3)     // Diffuse
-    ));
+    // mDirLights.push_back(std::make_shared<DirectionalLight>(
+    //     glm::vec3(-0.2f, -1.0f, -0.3f),    // direction
+    //     glm::vec3(0.2, 0.2, 0.2),    // Ambient
+    //     glm::vec3(0.4, 0.3, 0.3)     // Diffuse
+    // ));
 
     mGeometryShader = std::make_shared<Shader>();
     mGeometryShader->attachShader("C:/Users/loren/OneDrive/Desktop/Code/Randey/glsl/geometry_pass/vShader.glsl", GL_VERTEX_SHADER);
