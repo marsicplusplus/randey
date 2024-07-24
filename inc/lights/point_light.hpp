@@ -5,8 +5,8 @@
 
 class PointLight {
     public:
-        PointLight(glm::vec3 pos, glm::vec3 ambient, glm::vec3 diffuse) : 
-            mPos(pos), mAmbient(ambient), mDiffuse(diffuse), mSpecular(1.0f, 1.0f, 1.0f) {}
+        PointLight(glm::vec3 pos, glm::vec3 ambient, glm::vec3 diffuse, bool isShadowCaster = false) : 
+            mPos(pos), mAmbient(ambient), mDiffuse(diffuse), mSpecular(1.0f, 1.0f, 1.0f), mIsShadowCaster(isShadowCaster) {}
         float getVolumeRadius() {
             float maxChannel = std::max(std::max(mAmbient.x, mAmbient.y), mAmbient.z);
             float radius = (-mLinear +  std::sqrt(mLinear * mLinear - 4 * mQuadratic * (mConstant - (256.0 / 5.0) * maxChannel))) 
@@ -24,6 +24,7 @@ class PointLight {
         float mConstant = 1.0;
         float mLinear = 0.045;
         float mQuadratic = 0.0075;
+        bool mIsShadowCaster = false;
 
 };
 
