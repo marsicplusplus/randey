@@ -14,6 +14,8 @@ class PointLight {
             return radius;
         }
         void bindLight(ShaderPtr &shader);
+        glm::vec3 getPosition() const {return mPos;}
+        glm::vec3 getDiffuse() const {return mDiffuse; };
 
     private:
         glm::vec3 mPos;

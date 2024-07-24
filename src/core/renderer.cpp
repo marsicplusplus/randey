@@ -120,15 +120,17 @@ bool Renderer::init() {
     backpack->getTransform().scale(0.8f);
     mModels.push_back(backpack);
 
+    mSphereMesh = std::make_shared<SphereMesh>();
+
     mPointLights.push_back(std::make_shared<PointLight>(
         glm::vec3(4.0, 2.0, -1.0),      // Position
         glm::vec3(0.2f, 0.2f, 0.2f),    // Ambient
-        glm::vec3(0.5f, 0.5f, 0.5f)     // Diffuse
+        glm::vec3(0.2f, 0.5f, 0.5f)     // Diffuse
     ));
     mPointLights.push_back(std::make_shared<PointLight>(
         glm::vec3(-4.0, 4.0, -1.0),      // Position
         glm::vec3(0.2f, 0.2f, 0.2f),    // Ambient
-        glm::vec3(1.0f, 0.5f, 0.5f)     // Diffuse
+        glm::vec3(0.8f, 0.3f, 0.3f)     // Diffuse
     ));
 
     // mDirLights.push_back(std::make_shared<DirectionalLight>(
@@ -136,6 +138,10 @@ bool Renderer::init() {
     //     glm::vec3(0.2, 0.2, 0.2),    // Ambient
     //     glm::vec3(0.4, 0.3, 0.3)     // Diffuse
     // ));
+    mLightRenderingShader = std::make_shared<Shader>();
+    mLightRenderingShader->attachShader("C:/Users/loren/OneDrive/Desktop/Code/Randey/glsl/lightVShader.glsl", GL_VERTEX_SHADER);
+    mLightRenderingShader->attachShader("C:/Users/loren/OneDrive/Desktop/Code/Randey/glsl/lightFShader.glsl", GL_FRAGMENT_SHADER);
+    mLightRenderingShader->link();
 
     mGeometryShader = std::make_shared<Shader>();
     mGeometryShader->attachShader("C:/Users/loren/OneDrive/Desktop/Code/Randey/glsl/geometry_pass/vShader.glsl", GL_VERTEX_SHADER);
@@ -186,11 +192,38 @@ bool Renderer::start() {
         geometryPass();
         lightPass();
 
+        forwardPass();
+
         glfwSwapBuffers(mWindow);
         glfwPollEvents();
     }
 
     return true;
+}
+
+void Renderer::forwardPass() {
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, mGBuffer.mFbo);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // write to default framebuffer
+    glBlitFramebuffer(0, 0, mWidth, mHeight, 0, 0, mWidth, mHeight, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    glEnable(GL_DEPTH_TEST);
+    // Draw Lights as Spheres
+    if(mDrawLights) {
+        mLightRenderingShader->use();
+        auto view = this->mCamera->getViewMatrix();
+        mLightRenderingShader->setMat4("view", view);
+        mLightRenderingShader->setMat4("projection", mProjection);
+        for(const auto l : mPointLights) {
+            auto lightPos = l->getPosition();
+            Transform t;
+            t.translate(lightPos.x, lightPos.y, lightPos.z);
+            t.scale(0.25); // scale down unit sphere
+            mLightRenderingShader->setMat4("model", t.getMatrix());
+            mLightRenderingShader->setVec3("diffuse", l->getDiffuse());
+            mSphereMesh->draw(mLightRenderingShader);
+        }
+    }
 }
 
 void Renderer::lightPass() {

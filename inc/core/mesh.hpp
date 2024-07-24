@@ -17,7 +17,7 @@ struct Vertex {
         glm::vec3 mNormal;
         glm::vec2 mUv;
 
-        Vertex();
+        Vertex() {};
         Vertex(glm::vec3 pos, glm::vec3 normal, glm::vec2 uv) :
             mPos(pos), mNormal(normal), mUv(uv) {}
 
@@ -35,7 +35,7 @@ class Mesh {
         void update(float dt);
 
     protected:
-        Mesh();
+        Mesh() {};
 
         void setup();
 
@@ -49,59 +49,76 @@ class Mesh {
 };
 
 class SphereMesh : public Mesh {
-    SphereMesh() : Mesh(){
-        mVertices.clear();
-        mIndices.clear();
+    public: 
+        SphereMesh() : Mesh(){
+            mVertices.clear();
+            mIndices.clear();
+            const int sectorCount = 20;
+            const int stackCount = 20;
 
-        double latitudeBands = 30;
-        double longitudeBands = 30;
-        double radius = 1;
+            float x, y, z, xy;                           // vertex position
+            float nx, ny, nz, lengthInv = 1.0f; // vertex normal
+            float s, t;                                  // vertex texCoord
 
-        for (double latNumber = 0; latNumber <= latitudeBands; latNumber++)
-        {
-            double theta = latNumber * M_PI / latitudeBands;
-            double sinTheta = sin(theta);
-            double cosTheta = cos(theta);
+            float sectorStep = 2 * M_PI / sectorCount;
+            float stackStep = M_PI / stackCount;
+            float sectorAngle, stackAngle;
 
-            for (double longNumber = 0; longNumber <= longitudeBands; longNumber++)
-            {
-                double phi = longNumber * 2 * M_PI / longitudeBands;
-                double sinPhi = sin(phi);
-                double cosPhi = cos(phi);
+            for (int i = 0; i <= stackCount; ++i) {
+                stackAngle = M_PI / 2 - i * stackStep; // starting from pi/2 to -pi/2
+                xy = cosf(stackAngle);      // r * cos(u)
+                z = sinf(stackAngle);       // r * sin(u)
 
-                Vertex vs;
-                vs.mNormal[0] = cosPhi * sinTheta;                   // x
-                vs.mNormal[1] = cosTheta;                            // y
-                vs.mNormal[2] = sinPhi * sinTheta;                   // z
-                vs.mUv[0] = 1 - (longNumber / longitudeBands); // u
-                vs.mUv[1] = 1 - (latNumber / latitudeBands);   // v
-                vs.mPos[0] = radius * vs.mNormal[0];
-                vs.mPos[1] = radius * vs.mNormal[1];
-                vs.mPos[2] = radius * vs.mNormal[2];
+                // add (sectorCount+1) vertices per stack
+                // first and last vertices have same position and normal, but different tex coords
+                for (int j = 0; j <= sectorCount; ++j) {
+                    sectorAngle = j * sectorStep; // starting from 0 to 2pi
 
-                mVertices.push_back(vs);
-            }
+                    // vertex position (x, y, z)
+                    x = xy * cosf(sectorAngle); // r * cos(u) * cos(v)
+                    y = xy * sinf(sectorAngle); // r * cos(u) * sin(v)
+                    glm::vec3 pos(x, y, z);
 
-            for (int latNumber = 0; latNumber < latitudeBands; latNumber++)
-            {
-                for (int longNumber; longNumber < longitudeBands; longNumber++)
-                {
-                    int first = (latNumber * (longitudeBands + 1)) + longNumber;
-                    int second = first + longitudeBands + 1;
+                    // normalized vertex normal (nx, ny, nz)
+                    nx = x * lengthInv;
+                    ny = y * lengthInv;
+                    nz = z * lengthInv;
+                    glm::vec3 norm(nx, ny, nz);
 
-                    mIndices.push_back(first);
-                    mIndices.push_back(second);
-                    mIndices.push_back(first + 1);
-
-                    mIndices.push_back(second);
-                    mIndices.push_back(second + 1);
-                    mIndices.push_back(first + 1);
+                    // vertex tex coord (s, t) range between [0, 1]
+                    s = (float)j / sectorCount;
+                    t = (float)i / stackCount;
+                    glm::vec2 uv(s, t);
+                    mVertices.push_back(Vertex(pos, norm, uv));
                 }
             }
+
+            int k1, k2;
+            for (int i = 0; i < stackCount; ++i) {
+                k1 = i * (sectorCount + 1); // beginning of current stack
+                k2 = k1 + sectorCount + 1;  // beginning of next stack
+
+                for (int j = 0; j < sectorCount; ++j, ++k1, ++k2) {
+                    // 2 triangles per sector excluding first and last stacks
+                    // k1 => k2 => k1+1
+                    if (i != 0) {
+                        mIndices.push_back(k1);
+                        mIndices.push_back(k2);
+                        mIndices.push_back(k1 + 1);
+                    }
+
+                    // k1+1 => k2 => k2+1
+                    if (i != (stackCount - 1)) {
+                        mIndices.push_back(k1 + 1);
+                        mIndices.push_back(k2);
+                        mIndices.push_back(k2 + 1);
+                    }
+                }
+            }
+
+            mMat = 0;
+            setup();
         }
-        mMat = 0;
-        setup();
-    }
 };
 
 #endif

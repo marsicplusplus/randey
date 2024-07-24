@@ -26,11 +26,13 @@ class Renderer {
         uint32_t mWidth, mHeight;
         std::unique_ptr<Camera> mCamera;
         std::vector<ModelPtr> mModels;
+        std::shared_ptr<SphereMesh> mSphereMesh;
         std::vector<PointLightPtr> mPointLights;
         std::vector<DirectionalLightPtr> mDirLights;
         ShaderPtr mGeometryShader;
         ShaderPtr mPointLightsShader;
         ShaderPtr mDirectionalLightsShader;
+        ShaderPtr mLightRenderingShader;
         GBuffer mGBuffer;
         glm::mat4 mProjection;
 
@@ -38,12 +40,15 @@ class Renderer {
         uint32_t mQuadVAO;
         uint32_t mQuadVBO;
 
+        bool mDrawLights = true;
+
         static void framebufferSizeCB(GLFWwindow *window, int width, int height);
         void processInput();
         void geometryPass();
         void lightPass();
         void pointLightsPass();
         void directionalLightsPass();
+        void forwardPass();
 
         // Mesh loadMesh();
 };
