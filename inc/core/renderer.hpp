@@ -33,6 +33,7 @@ class Renderer {
         ShaderPtr mPointLightsShader;
         ShaderPtr mDirectionalLightsShader;
         ShaderPtr mLightRenderingShader;
+        ShaderPtr mStencilPassShader;
         GBuffer mGBuffer;
         glm::mat4 mProjection;
 

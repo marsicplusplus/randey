@@ -11,6 +11,8 @@
 
 #include <vector>
 
+#define PI       3.14159265358979323846   // pi
+
 struct Vertex {
     public:
         glm::vec3 mPos;
@@ -60,12 +62,12 @@ class SphereMesh : public Mesh {
             float nx, ny, nz, lengthInv = 1.0f; // vertex normal
             float s, t;                                  // vertex texCoord
 
-            float sectorStep = 2 * M_PI / sectorCount;
-            float stackStep = M_PI / stackCount;
+            float sectorStep = 2 * PI / sectorCount;
+            float stackStep = PI / stackCount;
             float sectorAngle, stackAngle;
 
             for (int i = 0; i <= stackCount; ++i) {
-                stackAngle = M_PI / 2 - i * stackStep; // starting from pi/2 to -pi/2
+                stackAngle = PI / 2 - i * stackStep; // starting from pi/2 to -pi/2
                 xy = cosf(stackAngle);      // r * cos(u)
                 z = sinf(stackAngle);       // r * sin(u)
 

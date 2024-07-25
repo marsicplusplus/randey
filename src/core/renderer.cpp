@@ -125,23 +125,28 @@ bool Renderer::init() {
     mPointLights.push_back(std::make_shared<PointLight>(
         glm::vec3(4.0, 2.0, -1.0),      // Position
         glm::vec3(0.2f, 0.2f, 0.2f),    // Ambient
-        glm::vec3(0.2f, 0.5f, 0.5f)     // Diffuse
-    ));
-    mPointLights.push_back(std::make_shared<PointLight>(
-        glm::vec3(-4.0, 4.0, -1.0),      // Position
-        glm::vec3(0.2f, 0.2f, 0.2f),    // Ambient
         glm::vec3(0.8f, 0.3f, 0.3f)     // Diffuse
     ));
-
-    // mDirLights.push_back(std::make_shared<DirectionalLight>(
-    //     glm::vec3(-0.2f, -1.0f, -0.3f),    // direction
-    //     glm::vec3(0.2, 0.2, 0.2),    // Ambient
-    //     glm::vec3(0.4, 0.3, 0.3)     // Diffuse
+    // mPointLights.push_back(std::make_shared<PointLight>(
+    //     glm::vec3(-4.0, 4.0, 2.0),      // Position
+    //     glm::vec3(0.2f, 0.2f, 0.2f),    // Ambient
+    //     glm::vec3(0.8f, 0.3f, 0.3f)     // Diffuse
     // ));
+
+    mDirLights.push_back(std::make_shared<DirectionalLight>(
+        glm::vec3(-0.2f, -1.0f, -0.3f),    // direction
+        glm::vec3(0.2, 0.2, 0.2),    // Ambient
+        glm::vec3(0.5, 0.5, 0.5)     // Diffuse
+    ));
     mLightRenderingShader = std::make_shared<Shader>();
     mLightRenderingShader->attachShader("C:/Users/loren/OneDrive/Desktop/Code/Randey/glsl/lightVShader.glsl", GL_VERTEX_SHADER);
     mLightRenderingShader->attachShader("C:/Users/loren/OneDrive/Desktop/Code/Randey/glsl/lightFShader.glsl", GL_FRAGMENT_SHADER);
     mLightRenderingShader->link();
+
+    mStencilPassShader = std::make_shared<Shader>();
+    mStencilPassShader->attachShader("C:/Users/loren/OneDrive/Desktop/Code/Randey/glsl/stencil_pass/vShader.glsl", GL_VERTEX_SHADER);
+    mStencilPassShader->attachShader("C:/Users/loren/OneDrive/Desktop/Code/Randey/glsl/stencil_pass/fShader.glsl", GL_FRAGMENT_SHADER);
+    mStencilPassShader->link();
 
     mGeometryShader = std::make_shared<Shader>();
     mGeometryShader->attachShader("C:/Users/loren/OneDrive/Desktop/Code/Randey/glsl/geometry_pass/vShader.glsl", GL_VERTEX_SHADER);
@@ -189,10 +194,17 @@ bool Renderer::start() {
         InputManager::Instance()->setMouseState(xpos, ypos);
         mCamera->update(deltaTime);
 
+        mGBuffer.startFrame();
+
         geometryPass();
         lightPass();
 
         forwardPass();
+
+        mGBuffer.bindFinalPass();
+        glBlitFramebuffer(0, 0, mWidth, mHeight, 
+                          0, 0, mWidth, mHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
 
         glfwSwapBuffers(mWindow);
         glfwPollEvents();
@@ -202,11 +214,7 @@ bool Renderer::start() {
 }
 
 void Renderer::forwardPass() {
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, mGBuffer.mFbo);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // write to default framebuffer
-    glBlitFramebuffer(0, 0, mWidth, mHeight, 0, 0, mWidth, mHeight, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
+    mGBuffer.bindForwardPass();
     glEnable(GL_DEPTH_TEST);
     // Draw Lights as Spheres
     if(mDrawLights) {
@@ -227,36 +235,79 @@ void Renderer::forwardPass() {
 }
 
 void Renderer::lightPass() {
-    glEnable(GL_BLEND);
-    glBlendEquation(GL_FUNC_ADD);
-    glBlendFunc(GL_ONE, GL_ONE);
-
-    mGBuffer.bindLightPass();
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     pointLightsPass();
     directionalLightsPass();
 }
 
 void Renderer::pointLightsPass() {
-    mPointLightsShader->use();
-    mPointLightsShader->setVec2("gScreenSize", mWidth, mHeight);
-    mPointLightsShader->setVec3("gViewPos", mCamera->getPos());
+    glEnable(GL_STENCIL_TEST);
     for(auto &l : mPointLights) {
-        l->bindLight(mPointLightsShader);       
-        glBindVertexArray(mQuadVAO);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        float volumeScale = l->getVolumeRadius();
+        glm::vec3 pos = l->getPosition();
+        Transform t;
+        t.scale(volumeScale);
+        t.translate(pos);
+        // Stencil Pass:
+        mStencilPassShader->use();
+        mGBuffer.bindStencilPass();
+        mStencilPassShader->setMat4("projection", mProjection);
+        mStencilPassShader->setMat4("view", mCamera->getViewMatrix());
+        mStencilPassShader->setMat4("model", t.getMatrix());
+
+        glEnable(GL_DEPTH_TEST);
+        glDisable(GL_CULL_FACE);
+        glClear(GL_STENCIL_BUFFER_BIT);
+        glStencilFunc(GL_ALWAYS, 0, 0);
+        glStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
+        glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
+        mSphereMesh->draw(mStencilPassShader);
+
+        // Light Pass:
+        glEnable(GL_BLEND);
+        glStencilFunc(GL_NOTEQUAL, 0, 0xFF);
+        glDisable(GL_DEPTH_TEST);
+        glBlendEquation(GL_FUNC_ADD);
+        glBlendFunc(GL_ONE, GL_ONE);
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_FRONT);
+
+        mPointLightsShader->use();
+        mGBuffer.bindLightPass();
+        mPointLightsShader->setVec2("gScreenSize", mWidth, mHeight);
+        mPointLightsShader->setVec3("gViewPos", mCamera->getPos());
+        mPointLightsShader->setMat4("projection", mProjection);
+        mPointLightsShader->setMat4("view", mCamera->getViewMatrix());
+        mPointLightsShader->setMat4("model", t.getMatrix());
+
+        l->bindLight(mPointLightsShader);
+        mSphereMesh->draw(mPointLightsShader);
+        glCullFace(GL_BACK);
+        glDisable(GL_BLEND);
     }
+
+    glDisable(GL_STENCIL_TEST);
 }
 
 void Renderer::directionalLightsPass() {
+    glEnable(GL_BLEND);
+    glBlendEquation(GL_FUNC_ADD);
+    glBlendFunc(GL_ONE, GL_ONE);
+
+    mGBuffer.bindLightPass();
+    glm::mat4 identity(1.0f);
     mDirectionalLightsShader->use();
     mDirectionalLightsShader->setVec2("gScreenSize", mWidth, mHeight);
     mDirectionalLightsShader->setVec3("gViewPos", mCamera->getPos());
+    mDirectionalLightsShader->setMat4("projection", identity);
+    mDirectionalLightsShader->setMat4("view", identity);
+
     for(auto &l : mDirLights) {
         l->bindLight(mDirectionalLightsShader);       
+        mDirectionalLightsShader->setMat4("model", identity);
         glBindVertexArray(mQuadVAO);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     }
+    glDisable(GL_BLEND);
 }
 
 void Renderer::geometryPass() {
@@ -272,7 +323,6 @@ void Renderer::geometryPass() {
         m->draw(mGeometryShader);
     }
     glDepthMask(GL_FALSE);
-    glDisable(GL_DEPTH_TEST);
 }
 
 void Renderer::processInput() {

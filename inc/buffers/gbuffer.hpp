@@ -16,10 +16,15 @@ class GBuffer {
 
         void bindGeometryPass();
         void bindLightPass();
+        void bindStencilPass();
+        void bindForwardPass();
+        void startFrame();
+        void bindFinalPass();
 
     public:
         unsigned int mFbo;
         unsigned int mTextures[GBUFFERTEXTURE_COUNT];
+        unsigned int mFinalTexture;
         unsigned int mDepth;
 
     private:
