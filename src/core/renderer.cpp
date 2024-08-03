@@ -10,6 +10,11 @@
 
 #include <iostream>
 
+#define MAX_POINT_LIGHTS 16
+#define MAX_DIR_LIGHTS 1
+#define POINT_LIGHTS_BINDING_POINT 0
+#define DIR_LIGHTS_BINDING_POINT 1
+
 #define DEBUG false
 
 float quadVertices[] = {
@@ -122,7 +127,7 @@ bool Renderer::init() {
 
     mSphereMesh = std::make_shared<SphereMesh>();
 
-    mPointLights.push_back(std::make_shared<PointLight>(
+    mPointLights.push_back(PointLight(
         glm::vec3(4.0, 2.0, -1.0),      // Position
         glm::vec3(0.2f, 0.2f, 0.2f),    // Ambient
         glm::vec3(0.8f, 0.3f, 0.3f)     // Diffuse
@@ -133,7 +138,7 @@ bool Renderer::init() {
     //     glm::vec3(0.8f, 0.3f, 0.3f)     // Diffuse
     // ));
 
-    mDirLights.push_back(std::make_shared<DirectionalLight>(
+    mDirLights.push_back(DirectionalLight(
         glm::vec3(-0.2f, -1.0f, -0.3f),    // direction
         glm::vec3(0.2, 0.2, 0.2),    // Ambient
         glm::vec3(0.5, 0.5, 0.5)     // Diffuse
@@ -163,8 +168,23 @@ bool Renderer::init() {
     mDirectionalLightsShader->attachShader("C:/Users/loren/OneDrive/Desktop/Code/Randey/glsl/light_pass/fShader_dir_light.glsl", GL_FRAGMENT_SHADER);
     mDirectionalLightsShader->link();
 
+    mTransparencyShader = std::make_shared<Shader>();
+    mTransparencyShader->attachShader("C:/Users/loren/OneDrive/Desktop/Code/Randey/glsl/forward_pass/vShader.glsl", GL_VERTEX_SHADER);
+    mTransparencyShader->attachShader("C:/Users/loren/OneDrive/Desktop/Code/Randey/glsl/forward_pass/fShader.glsl", GL_FRAGMENT_SHADER);
+    mTransparencyShader->link();
 
+    mTransparencyShader->use();
     mGBuffer.init(mWidth, mHeight);
+    mPointLightsUBO = std::make_unique<UBO>();
+    mPointLightsUBO->createUBO(PointLight::getDataSize() * MAX_POINT_LIGHTS, GL_STATIC_DRAW);
+    mPointLightsUBO->bindBufferBaseToBindingPoint(POINT_LIGHTS_BINDING_POINT);
+
+    mDirLightsUBO = std::make_unique<UBO>();
+    // mDirLightsUBO->createUBO(4 * sizeof(glm::vec4), GL_STATIC_DRAW);
+    // mDirLightsUBO->bindBufferBaseToBindingPoint(DIR_LIGHTS_BINDING_POINT);
+
+    mTransparencyShader->bindUniformBlockToBindingPoint("PointLightsBlock", POINT_LIGHTS_BINDING_POINT);
+    mTransparencyShader->bindUniformBlockToBindingPoint("DirectionalLightsBlock", DIR_LIGHTS_BINDING_POINT);
 
     glGenVertexArrays(1, &mQuadVAO);
     glGenBuffers(1, &mQuadVBO);
@@ -194,11 +214,18 @@ bool Renderer::start() {
         InputManager::Instance()->setMouseState(xpos, ypos);
         mCamera->update(deltaTime);
 
-        mGBuffer.startFrame();
+        mGBuffer.startFrame(); 
 
         geometryPass();
         lightPass();
 
+
+        mPointLightsUBO->bindUBO();
+        size_t offset = 0;
+        for(auto &p : mPointLights) {
+            mPointLightsUBO->setBufferData(offset, p.getDataPointer(), PointLight::getDataSize());
+            offset += (PointLight::getDataSize());
+        }
         forwardPass();
 
         mGBuffer.bindFinalPass();
@@ -223,14 +250,30 @@ void Renderer::forwardPass() {
         mLightRenderingShader->setMat4("view", view);
         mLightRenderingShader->setMat4("projection", mProjection);
         for(const auto l : mPointLights) {
-            auto lightPos = l->getPosition();
+            auto lightPos = l.getPosition();
             Transform t;
             t.translate(lightPos.x, lightPos.y, lightPos.z);
             t.scale(0.25); // scale down unit sphere
             mLightRenderingShader->setMat4("model", t.getMatrix());
-            mLightRenderingShader->setVec3("diffuse", l->getDiffuse());
+            mLightRenderingShader->setVec3("diffuse", l.getDiffuse());
             mSphereMesh->draw(mLightRenderingShader);
         }
+    }
+
+    // Render Transparent
+    glEnable(GL_BLEND);  
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    mTransparencyShader->use();
+    mTransparencyShader->setMat4("view", mCamera->getViewMatrix());
+    mTransparencyShader->setMat4("projection", mProjection);
+    mTransparencyShader->setVec2("gScreenSize", mWidth, mHeight);
+    mTransparencyShader->setVec3("gViewPos", mCamera->getPos());
+    mTransparencyShader->setInt("numPointLights", mPointLights.size());
+    // mTransparencyShader->setInt("numDirectionalLights", mDirLights.size());
+    // mTransparencyShader->setInt("numPointLights", 0);
+    mTransparencyShader->setInt("numDirectionalLights", 0);
+    for(auto &m : mModels) {
+        m->draw(mTransparencyShader, true);
     }
 }
 
@@ -242,8 +285,8 @@ void Renderer::lightPass() {
 void Renderer::pointLightsPass() {
     glEnable(GL_STENCIL_TEST);
     for(auto &l : mPointLights) {
-        float volumeScale = l->getVolumeRadius();
-        glm::vec3 pos = l->getPosition();
+        float volumeScale = l.getVolumeRadius();
+        glm::vec3 pos = l.getPosition();
         Transform t;
         t.scale(volumeScale);
         t.translate(pos);
@@ -279,7 +322,7 @@ void Renderer::pointLightsPass() {
         mPointLightsShader->setMat4("view", mCamera->getViewMatrix());
         mPointLightsShader->setMat4("model", t.getMatrix());
 
-        l->bindLight(mPointLightsShader);
+        l.bindLight(mPointLightsShader);
         mSphereMesh->draw(mPointLightsShader);
         glCullFace(GL_BACK);
         glDisable(GL_BLEND);
@@ -302,7 +345,7 @@ void Renderer::directionalLightsPass() {
     mDirectionalLightsShader->setMat4("view", identity);
 
     for(auto &l : mDirLights) {
-        l->bindLight(mDirectionalLightsShader);       
+        l.bindLight(mDirectionalLightsShader);       
         mDirectionalLightsShader->setMat4("model", identity);
         glBindVertexArray(mQuadVAO);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);

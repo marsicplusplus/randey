@@ -37,10 +37,16 @@ namespace MeshLoader
         {
             ambientTexture = ResourceManager::Instance()->setTexture(mp + mat.ambient_texname, flipTexture);
         }
+        unsigned int alphaTexture = 0;
+        if (!mat.ambient_texname.empty())
+        {
+            alphaTexture = ResourceManager::Instance()->setTexture(mp + mat.alpha_texname, flipTexture);
+        }
         return std::make_shared<Material>(
             diffuseTexture,
             specularTexture,
-            ambientTexture);
+            ambientTexture,
+            alphaTexture);
     }
 
     ModelPtr LoadModel(const std::string &fp,

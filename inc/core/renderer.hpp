@@ -10,6 +10,7 @@
 #include "lights/point_light.hpp"
 #include "lights/directional_light.hpp"
 #include "buffers/gbuffer.hpp"
+#include "buffers/uniform_buffer_object.hpp"
 
 #include <memory>
 
@@ -27,13 +28,17 @@ class Renderer {
         std::unique_ptr<Camera> mCamera;
         std::vector<ModelPtr> mModels;
         std::shared_ptr<SphereMesh> mSphereMesh;
-        std::vector<PointLightPtr> mPointLights;
-        std::vector<DirectionalLightPtr> mDirLights;
+        std::vector<PointLight> mPointLights;
+        std::vector<DirectionalLight> mDirLights;
         ShaderPtr mGeometryShader;
         ShaderPtr mPointLightsShader;
         ShaderPtr mDirectionalLightsShader;
         ShaderPtr mLightRenderingShader;
         ShaderPtr mStencilPassShader;
+        ShaderPtr mTransparencyShader;
+        std::unique_ptr<UBO> mPointLightsUBO;
+        std::unique_ptr<UBO> mDirLightsUBO;
+
         GBuffer mGBuffer;
         glm::mat4 mProjection;
 

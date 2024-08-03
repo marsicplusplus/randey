@@ -15,10 +15,8 @@ struct PointLight {
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
-	
-    float constant;
-    float linear;
-    float quadratic;
+
+    vec3 attenuationTerms; // [constant, linear, quadratic]
 };
 
 uniform PointLight pointLight;
@@ -50,9 +48,13 @@ void main() {
 
 
     // Attenuation
+    float constant = pointLight.attenuationTerms.x;
+    float linear = pointLight.attenuationTerms.y;
+    float quadratic = pointLight.attenuationTerms.z;
+
     float dist = length(pointLight.position - FragPos);
-    float attenuation = 1.0 / (pointLight.constant + pointLight.linear * dist + 
-                    pointLight.quadratic * (dist * dist)); 
+    float attenuation = 1.0 / (constant + linear * dist + 
+                    quadratic * (dist * dist)); 
 
     vec3 ret = ambient + diffuse + specular;
         

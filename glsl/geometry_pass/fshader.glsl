@@ -11,6 +11,7 @@ struct Material {
     sampler2D diffuseTexture;
     sampler2D specularTexture;
     sampler2D ambientTexture;
+    sampler2D alphaTexture; // do nothing with it
     float shininess;
 };
 

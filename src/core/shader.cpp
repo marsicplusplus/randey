@@ -130,3 +130,10 @@ void Shader::setVec2(const std::string &name, float x, float y) const {
 Shader::~Shader() {
     mShaders.clear();
 }
+
+void Shader::bindUniformBlockToBindingPoint(const std::string &name, const unsigned int bindingPoint) const {
+    unsigned int blockIndex = glGetUniformBlockIndex(mID, name.c_str());
+    if (blockIndex != GL_INVALID_INDEX) {
+        glUniformBlockBinding(mID, blockIndex, bindingPoint);
+    }
+}

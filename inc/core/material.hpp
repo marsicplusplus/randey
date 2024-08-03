@@ -10,10 +10,11 @@
 
 class Material {
     public:
-        Material(unsigned int diffuseTex, unsigned int specularTex, unsigned int ambientTex) {
+        Material(unsigned int diffuseTex, unsigned int specularTex, unsigned int ambientTex, unsigned int alphaTex = 0) {
                     mTextures[TextureType::SPECULAR] = specularTex;
                     mTextures[TextureType::DIFFUSE] = diffuseTex;
                     mTextures[TextureType::AMBIENT] = ambientTex;
+                    mTextures[TextureType::ALPHA] = alphaTex;
             }
 
         void bindMaterial(ShaderPtr &shader);
@@ -21,7 +22,6 @@ class Material {
             mTextures[tType] = t;
         }
 
-    private:
         std::unordered_map<TextureType, unsigned int> mTextures;
 };
 

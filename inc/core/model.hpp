@@ -9,11 +9,15 @@ class Model {
         Model(std::vector<Mesh> meshes, std::vector<MaterialPtr> mats) : mMeshes(meshes), mMaterials(mats) {}
         Transform& getTransform() { return mTransform; }
 
-        void draw(ShaderPtr &shaderProgram) {
+        void draw(ShaderPtr &shaderProgram, bool drawTransparent = false) {
             shaderProgram->setMat4("model", mTransform.getMatrix());
             shaderProgram->setMat4("modelTransposeInverse", mTransform.getTransposeInverse());
             for(auto &mesh : mMeshes) {
-                mMaterials[mesh.mMat]->bindMaterial(shaderProgram);
+                auto mat = mMaterials[mesh.mMat];
+                if((drawTransparent && mat->mTextures.find(TextureType::ALPHA)->second == 0) 
+                    || (!drawTransparent && mat->mTextures.find(TextureType::ALPHA)->second != 0))
+                    continue;
+                mat->bindMaterial(shaderProgram);
                 mesh.draw(shaderProgram);
             }
         }

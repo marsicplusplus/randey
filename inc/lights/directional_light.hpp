@@ -14,9 +14,13 @@ class DirectionalLight {
 
     private:
         glm::vec3 mDir;
+        float _DUMMY0;
         glm::vec3 mAmbient;
+        float _DUMMY1;
         glm::vec3 mDiffuse;
+        float _DUMMY2;
         glm::vec3 mSpecular;
+        float _DUMMY3;
 
 };
 
