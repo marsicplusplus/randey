@@ -2,6 +2,7 @@
 #define __POINT_LIGHT_HPP__
 
 #include "core/shader.hpp"
+#include "buffers/shadow_map_FBO.hpp"
 
 class PointLight {
     public:
@@ -18,6 +19,8 @@ class PointLight {
         glm::vec3 getDiffuse() const {return mDiffuse; };
 
     private:
+        ShadowMapFBO shadowMapFBO;
+
         glm::vec3 mPos;
         glm::vec3 mAmbient;
         glm::vec3 mDiffuse;
@@ -27,7 +30,6 @@ class PointLight {
         float mLinear = 0.045;
         float mQuadratic = 0.0075;
         bool mIsShadowCaster = false;
-
 };
 
 typedef std::shared_ptr<PointLight> PointLightPtr;

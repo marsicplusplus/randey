@@ -10,6 +10,7 @@
 #include "lights/point_light.hpp"
 #include "lights/directional_light.hpp"
 #include "buffers/gbuffer.hpp"
+#include "buffers/shadow_map_FBO.hpp"
 
 #include <memory>
 
@@ -34,7 +35,9 @@ class Renderer {
         ShaderPtr mDirectionalLightsShader;
         ShaderPtr mLightRenderingShader;
         ShaderPtr mStencilPassShader;
+        ShaderPtr mShadowMapShader;
         GBuffer mGBuffer;
+        ShadowMapFBO mShadowMapFBO;
         glm::mat4 mProjection;
 
         // Quad
@@ -50,6 +53,7 @@ class Renderer {
         void pointLightsPass();
         void directionalLightsPass();
         void forwardPass();
+        void shadowMapPass();
 
         // Mesh loadMesh();
 };

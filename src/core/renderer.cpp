@@ -110,33 +110,35 @@ bool Renderer::init() {
     #endif
 
     mCamera = std::make_unique<Camera>(glm::vec3(0.0, 2.0, 5.0), glm::vec3(0.0, 1.0, 0.0));
-    mProjection = glm::perspective(glm::radians(70.0f), (float)mWidth/mHeight, 0.1f, 150.0f);
+    mProjection = glm::perspective(glm::radians(70.0f), (float)mWidth/mHeight, 0.1f, 200.0f);
 
     ModelPtr sponza = MeshLoader::LoadModel("C:/Users/loren/OneDrive/Desktop/Code/Randey/models/sponza/sponza.obj", "C:/Users/loren/OneDrive/Desktop/Code/Randey/models/sponza/", true);
     sponza->getTransform().scale(1.0f/20.0f);
     mModels.push_back(sponza);
     ModelPtr backpack = MeshLoader::LoadModel("C:/Users/loren/OneDrive/Desktop/Code/Randey/models/backpack.obj", "C:/Users/loren/OneDrive/Desktop/Code/Randey/models/", false);
-    backpack->getTransform().translate(0.0, 1.4, 0.0);
+    backpack->getTransform().translate(0.0, 2.0, 0.0);
     backpack->getTransform().scale(0.8f);
     mModels.push_back(backpack);
 
     mSphereMesh = std::make_shared<SphereMesh>();
 
-    mPointLights.push_back(std::make_shared<PointLight>(
-        glm::vec3(4.0, 2.0, -1.0),      // Position
-        glm::vec3(0.2f, 0.2f, 0.2f),    // Ambient
-        glm::vec3(0.8f, 0.3f, 0.3f)     // Diffuse
-    ));
+    // mPointLights.push_back(std::make_shared<PointLight>(
+    //     glm::vec3(4.0, 2.0, -1.0),      // Position
+    //     glm::vec3(0.2f, 0.2f, 0.2f),    // Ambient
+    //     glm::vec3(0.8f, 0.3f, 0.3f)     // Diffuse
+    // ));
     // mPointLights.push_back(std::make_shared<PointLight>(
     //     glm::vec3(-4.0, 4.0, 2.0),      // Position
     //     glm::vec3(0.2f, 0.2f, 0.2f),    // Ambient
     //     glm::vec3(0.8f, 0.3f, 0.3f)     // Diffuse
     // ));
-
+    ShadowMapFBOPtr shadowMap = std::make_shared<ShadowMapFBO>();
+    shadowMap->init(mWidth, mHeight, GL_TEXTURE_2D);
     mDirLights.push_back(std::make_shared<DirectionalLight>(
-        glm::vec3(-0.2f, -1.0f, -0.3f),    // direction
-        glm::vec3(0.2, 0.2, 0.2),    // Ambient
-        glm::vec3(0.5, 0.5, 0.5)     // Diffuse
+        glm::vec3(0.6f, -1.0f, 0.0f),     // direction
+        glm::vec3(0.2, 0.2, 0.2),           // Ambient
+        glm::vec3(0.9, 0.9, 0.9),           // Diffuse
+        shadowMap
     ));
     mLightRenderingShader = std::make_shared<Shader>();
     mLightRenderingShader->attachShader("C:/Users/loren/OneDrive/Desktop/Code/Randey/glsl/lightVShader.glsl", GL_VERTEX_SHADER);
@@ -152,6 +154,11 @@ bool Renderer::init() {
     mGeometryShader->attachShader("C:/Users/loren/OneDrive/Desktop/Code/Randey/glsl/geometry_pass/vShader.glsl", GL_VERTEX_SHADER);
     mGeometryShader->attachShader("C:/Users/loren/OneDrive/Desktop/Code/Randey/glsl/geometry_pass/fShader.glsl", GL_FRAGMENT_SHADER);
     mGeometryShader->link();
+
+    mShadowMapShader = std::make_shared<Shader>();
+    mShadowMapShader->attachShader("C:/Users/loren/OneDrive/Desktop/Code/Randey/glsl/shadow_pass/vShader.glsl", GL_VERTEX_SHADER);
+    mShadowMapShader->attachShader("C:/Users/loren/OneDrive/Desktop/Code/Randey/glsl/shadow_pass/fShader.glsl", GL_FRAGMENT_SHADER);
+    mShadowMapShader->link();
 
     mPointLightsShader = std::make_shared<Shader>();
     mPointLightsShader->attachShader("C:/Users/loren/OneDrive/Desktop/Code/Randey/glsl/light_pass/vShader.glsl", GL_VERTEX_SHADER);
@@ -194,6 +201,8 @@ bool Renderer::start() {
         InputManager::Instance()->setMouseState(xpos, ypos);
         mCamera->update(deltaTime);
 
+        shadowMapPass();
+
         mGBuffer.startFrame();
 
         geometryPass();
@@ -211,6 +220,20 @@ bool Renderer::start() {
     }
 
     return true;
+}
+
+void Renderer::shadowMapPass() {
+    glCullFace(GL_FRONT);
+    mShadowMapShader->use();
+    for (auto d : mDirLights) {
+        d->bindForShadowPass(mShadowMapShader);
+        glClear(GL_DEPTH_BUFFER_BIT);
+        for(auto &m : mModels) {
+            m->draw(mShadowMapShader);
+        }
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glCullFace(GL_BACK);
 }
 
 void Renderer::forwardPass() {
