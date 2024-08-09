@@ -3,7 +3,7 @@
 #include "core/renderer.hpp"
 
 int main() {
-    Renderer randey(800, 600);
+    Renderer randey(1280, 720);
     if(!randey.init()) {
         return -1;
     }
