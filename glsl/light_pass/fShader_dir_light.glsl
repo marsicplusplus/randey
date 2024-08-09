@@ -46,7 +46,7 @@ float shadowFactor(vec4 FragPosLightSpace, vec3 normal, vec3 lightDir) {
         }
     }
 
-    return (0.5 + (Factor / 18.0));
+    return (0.2 + (Factor / 18.0));
 }
 
 void main() {             

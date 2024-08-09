@@ -80,7 +80,7 @@ bool Renderer::init() {
     #endif
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    mWindow = glfwCreateWindow(800, 600, "Randey", NULL, NULL);
+    mWindow = glfwCreateWindow(mWidth, mHeight, "Randey", NULL, NULL);
      if (mWindow == nullptr) {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
@@ -141,33 +141,33 @@ bool Renderer::init() {
         shadowMap
     ));
     mLightRenderingShader = std::make_shared<Shader>();
-    mLightRenderingShader->attachShader("C:/Users/loren/OneDrive/Desktop/Code/Randey/glsl/lightVShader.glsl", GL_VERTEX_SHADER);
-    mLightRenderingShader->attachShader("C:/Users/loren/OneDrive/Desktop/Code/Randey/glsl/lightFShader.glsl", GL_FRAGMENT_SHADER);
+    mLightRenderingShader->attachShader("glsl/lightVShader.glsl", GL_VERTEX_SHADER);
+    mLightRenderingShader->attachShader("glsl/lightFShader.glsl", GL_FRAGMENT_SHADER);
     mLightRenderingShader->link();
 
     mStencilPassShader = std::make_shared<Shader>();
-    mStencilPassShader->attachShader("C:/Users/loren/OneDrive/Desktop/Code/Randey/glsl/stencil_pass/vShader.glsl", GL_VERTEX_SHADER);
-    mStencilPassShader->attachShader("C:/Users/loren/OneDrive/Desktop/Code/Randey/glsl/stencil_pass/fShader.glsl", GL_FRAGMENT_SHADER);
+    mStencilPassShader->attachShader("glsl/stencil_pass/vShader.glsl", GL_VERTEX_SHADER);
+    mStencilPassShader->attachShader("glsl/stencil_pass/fShader.glsl", GL_FRAGMENT_SHADER);
     mStencilPassShader->link();
 
     mGeometryShader = std::make_shared<Shader>();
-    mGeometryShader->attachShader("C:/Users/loren/OneDrive/Desktop/Code/Randey/glsl/geometry_pass/vShader.glsl", GL_VERTEX_SHADER);
-    mGeometryShader->attachShader("C:/Users/loren/OneDrive/Desktop/Code/Randey/glsl/geometry_pass/fShader.glsl", GL_FRAGMENT_SHADER);
+    mGeometryShader->attachShader("glsl/geometry_pass/vShader.glsl", GL_VERTEX_SHADER);
+    mGeometryShader->attachShader("glsl/geometry_pass/fShader.glsl", GL_FRAGMENT_SHADER);
     mGeometryShader->link();
 
     mShadowMapShader = std::make_shared<Shader>();
-    mShadowMapShader->attachShader("C:/Users/loren/OneDrive/Desktop/Code/Randey/glsl/shadow_pass/vShader.glsl", GL_VERTEX_SHADER);
-    mShadowMapShader->attachShader("C:/Users/loren/OneDrive/Desktop/Code/Randey/glsl/shadow_pass/fShader.glsl", GL_FRAGMENT_SHADER);
+    mShadowMapShader->attachShader("glsl/shadow_pass/vShader.glsl", GL_VERTEX_SHADER);
+    mShadowMapShader->attachShader("glsl/shadow_pass/fShader.glsl", GL_FRAGMENT_SHADER);
     mShadowMapShader->link();
 
     mPointLightsShader = std::make_shared<Shader>();
-    mPointLightsShader->attachShader("C:/Users/loren/OneDrive/Desktop/Code/Randey/glsl/light_pass/vShader.glsl", GL_VERTEX_SHADER);
-    mPointLightsShader->attachShader("C:/Users/loren/OneDrive/Desktop/Code/Randey/glsl/light_pass/fShader_point_light.glsl", GL_FRAGMENT_SHADER);
+    mPointLightsShader->attachShader("glsl/light_pass/vShader.glsl", GL_VERTEX_SHADER);
+    mPointLightsShader->attachShader("glsl/light_pass/fShader_point_light.glsl", GL_FRAGMENT_SHADER);
     mPointLightsShader->link();
 
     mDirectionalLightsShader = std::make_shared<Shader>();
-    mDirectionalLightsShader->attachShader("C:/Users/loren/OneDrive/Desktop/Code/Randey/glsl/light_pass/vShader.glsl", GL_VERTEX_SHADER);
-    mDirectionalLightsShader->attachShader("C:/Users/loren/OneDrive/Desktop/Code/Randey/glsl/light_pass/fShader_dir_light.glsl", GL_FRAGMENT_SHADER);
+    mDirectionalLightsShader->attachShader("glsl/light_pass/vShader.glsl", GL_VERTEX_SHADER);
+    mDirectionalLightsShader->attachShader("glsl/light_pass/fShader_dir_light.glsl", GL_FRAGMENT_SHADER);
     mDirectionalLightsShader->link();
 
 
