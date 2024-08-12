@@ -14,11 +14,13 @@ Hence, if you are looking for a good codebase, [looks elsewhere](https://github.
 
 - tiny_obj_loader model loading;
 - Deferred rendering;
-- Shadow Mapping;
+- Shadow Mapping for Directional Lights;
 - Point and Directional lights;
+- Skybox;
 
 ## Roadmap
 
+- Transparency;
 - UI;
 - Physically Based Rendering;
 - Post Processing;

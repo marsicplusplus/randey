@@ -32,6 +32,7 @@ set( SRC
 	 src/core/camera.cpp
 	 src/core/transform.cpp
 	 src/core/material.cpp
+	 src/core/cubemap_texture.cpp
 	 src/core/texture.cpp
 	 src/lights/point_light.cpp
 	 src/lights/directional_light.cpp

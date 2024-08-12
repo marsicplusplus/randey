@@ -17,5 +17,9 @@ namespace MeshLoader
         const std::string &mp, bool flipTexture = false);
 }; // namespace MeshLoader
 
+namespace Images{
+    unsigned char* loadImage(const std::string &fileName, int &width, int &height, int &nrChannel);
+    void freeData(unsigned char* data);
+};
 
 #endif

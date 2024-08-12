@@ -9,6 +9,7 @@
 
 #include "managers/resource_manager.hpp"
 
+#include "stb_image.h"
 namespace std {
     template<> struct hash<Vertex> {
         size_t operator()(Vertex const& vertex) const {
@@ -114,3 +115,17 @@ namespace MeshLoader
             return std::make_shared<Model>(meshes, materials);
         }
 } // namespace MeshLoader
+
+namespace Images {
+    unsigned char* loadImage(const std::string &fileName, int &width, int &height, int &nrChannels) {
+        unsigned char* data = stbi_load(fileName.c_str(), &width, &height, &nrChannels, 0);
+        if(data == nullptr){
+            return nullptr;
+        }
+        return data;
+    }
+
+    void freeData(unsigned char *data) {
+        stbi_image_free(data);
+    }
+}
