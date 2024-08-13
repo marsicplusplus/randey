@@ -44,10 +44,15 @@ class Renderer {
         ShaderPtr mStencilPassShader;
         ShaderPtr mShadowMapShader;
         ShaderPtr mSkyboxShader;
+        ShaderPtr mTransparencyAccumShader;
+        ShaderPtr mTransparencyBlendingShader;
 
         // Buffers & Textures:
         GBuffer mGBuffer;
         std::shared_ptr<CubemapTexture> mSkyboxTexture;
+        unsigned int mTransparencyFBO;
+        unsigned int mAccumTransparencyTexture;
+        unsigned int mRevealTransparencyTexture;
 
         // Matrices:
         glm::mat4 mProjection;

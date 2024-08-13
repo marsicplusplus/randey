@@ -38,6 +38,7 @@ set( SRC
 	 src/lights/directional_light.cpp
 	 src/buffers/gbuffer.cpp
 	 src/buffers/shadow_map_FBO.cpp
+	 src/buffers/transparency_FBO.cpp
 	 src/managers/input_manager.cpp
 	 src/managers/resource_manager.cpp
 	)
