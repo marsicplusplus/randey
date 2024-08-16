@@ -17,7 +17,7 @@ unsigned int ResourceManager::setTexture(const std::string &path, bool flip) {
 
     glTextureParameteri(textId, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTextureParameteri(textId, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTextureParameteri(textId, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTextureParameteri(textId, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTextureParameteri(textId, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     stbi_set_flip_vertically_on_load(flip);
@@ -31,6 +31,9 @@ unsigned int ResourceManager::setTexture(const std::string &path, bool flip) {
     if(nrChannels == 1) {
         format = GL_RED;
         internalFormat = GL_R8;
+    } else if (nrChannels == 2) {
+        format = GL_RG;
+        internalFormat = GL_RG16F;
     } else if (nrChannels == 3) {
         format = GL_RGB;
         internalFormat = GL_RGB8;

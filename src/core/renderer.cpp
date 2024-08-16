@@ -10,7 +10,7 @@
 
 #include <iostream>
 
-#define DEBUG false
+#define DEBUG true
 
 float quadVertices[] = {
     // positions      
@@ -185,7 +185,20 @@ bool Renderer::init() {
                                                         "../textures/yokohama2/negz.jpg");
     mSkyboxTexture->load();
 
+
+    /* Deferred Rendering Stuff: */
     mGBuffer.init(mWidth, mHeight);
+
+    /* Transparency Stuff: */
+    mTransparencyFBO.init(mWidth, mHeight); 
+    mTransparencyAccumShader = std::make_shared<Shader>();
+    mTransparencyAccumShader->attachShader("../glsl/transparency_pass/vShader.glsl", GL_VERTEX_SHADER);
+    mTransparencyAccumShader->attachShader("../glsl/transparency_pass/fShader.glsl", GL_FRAGMENT_SHADER);
+    mTransparencyAccumShader->link();
+    mTransparencyBlendingShader = std::make_shared<Shader>();
+    mTransparencyBlendingShader->attachShader("../glsl/transparency_pass/vShader_composite.glsl", GL_VERTEX_SHADER);
+    mTransparencyBlendingShader->attachShader("../glsl/transparency_pass/fShader_composite.glsl", GL_FRAGMENT_SHADER);
+    mTransparencyBlendingShader->link();
 
     glGenVertexArrays(1, &mQuadVAO);
     glGenBuffers(1, &mQuadVBO);
@@ -222,7 +235,11 @@ bool Renderer::start() {
         geometryPass();
         lightPass();
 
-        forwardPass();
+        drawPointLights();
+
+        OITGatherPass();
+
+        mGBuffer.bindForwardPass();
         skyboxPass();
 
         mGBuffer.bindFinalPass();
@@ -272,7 +289,31 @@ void Renderer::shadowMapPass() {
     glCullFace(GL_BACK);
 }
 
-void Renderer::forwardPass() {
+void Renderer::OITCompositePass(){
+/*
+    Transform identity;
+    mTransparencyBlendingShader->use();
+    mTransparencyBlendingShader->setMat4("view", view);
+    mTransparencyBlendingShader->setMat4("projection", mProjection);
+    mTransparencyBlendingShader->setMat4("model", identity.getMatrix());
+    glBindVertexArray(mQuadVAO);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+*/
+}
+
+void Renderer::OITGatherPass(){
+    // Transparency Pass:
+    mTransparencyAccumShader->use();
+    auto view = this->mCamera->getViewMatrix();
+    mTransparencyAccumShader->setMat4("view", view);
+    mTransparencyAccumShader->setMat4("projection", mProjection);
+    mTransparencyFBO.bindForGather();
+    for(const auto m : mModels) {
+        m->draw(mTransparencyAccumShader, /* Draw Transparent */ true);
+    }
+}
+
+void Renderer::drawPointLights() {
     mGBuffer.bindForwardPass();
     glEnable(GL_DEPTH_TEST);
     // Draw Lights as Spheres

@@ -12,6 +12,7 @@
 #include "lights/directional_light.hpp"
 #include "buffers/gbuffer.hpp"
 #include "buffers/shadow_map_FBO.hpp"
+#include "buffers/transparency_FBO.hpp"
 
 #include <memory>
 
@@ -49,10 +50,8 @@ class Renderer {
 
         // Buffers & Textures:
         GBuffer mGBuffer;
+        TransparencyFBO mTransparencyFBO;
         std::shared_ptr<CubemapTexture> mSkyboxTexture;
-        unsigned int mTransparencyFBO;
-        unsigned int mAccumTransparencyTexture;
-        unsigned int mRevealTransparencyTexture;
 
         // Matrices:
         glm::mat4 mProjection;
@@ -72,9 +71,11 @@ class Renderer {
         void lightPass();
         void pointLightsPass();
         void directionalLightsPass();
-        void forwardPass();
+        void drawPointLights();
         void shadowMapPass();
         void skyboxPass();
+        void OITGatherPass();
+        void OITCompositePass();
 
         // Mesh loadMesh();
 };

@@ -38,10 +38,17 @@ namespace MeshLoader
         {
             ambientTexture = ResourceManager::Instance()->setTexture(mp + mat.ambient_texname, flipTexture);
         }
+        unsigned int alphaTexture = 0;
+        if (!mat.alpha_texname.empty())
+        {
+            alphaTexture = ResourceManager::Instance()->setTexture(mp + mat.alpha_texname, flipTexture);
+        }
+
         return std::make_shared<Material>(
             diffuseTexture,
             specularTexture,
-            ambientTexture);
+            ambientTexture,
+            alphaTexture);
     }
 
     ModelPtr LoadModel(const std::string &fp,
@@ -106,7 +113,7 @@ namespace MeshLoader
                 meshes.push_back(mesh);
             } 
             std::vector<MaterialPtr> materials;
-            materials.push_back(std::make_shared<Material>(0, 0, 0));
+            materials.push_back(std::make_shared<Material>(0, 0, 0, 0));
             for(const auto &mat : objMaterials) {
                 materials.push_back(
                     parseMaterial(mp, mat, flipTexture)

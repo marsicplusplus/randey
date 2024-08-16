@@ -76,10 +76,6 @@ void GBuffer::bindGeometryPass() {
     glDrawBuffers(GBUFFERTEXTURE_COUNT, attachments);
 }
 
-void GBuffer::bindForwardPass() {
-    glDrawBuffer(GL_COLOR_ATTACHMENT4);
-}
-
 void GBuffer::bindLightPass() {
     glDrawBuffer(GL_COLOR_ATTACHMENT4);
     for(unsigned int i = 0; i < GBUFFERTEXTURE_COUNT; i++) {
@@ -89,6 +85,11 @@ void GBuffer::bindLightPass() {
 
 void GBuffer::bindStencilPass() {
     glDrawBuffer(GL_NONE);
+}
+
+void GBuffer::bindForwardPass(){
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, mFbo);
+    glDrawBuffer(GL_COLOR_ATTACHMENT4);
 }
 
 void GBuffer::bindFinalPass() {
