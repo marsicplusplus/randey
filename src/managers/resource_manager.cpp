@@ -1,6 +1,7 @@
 #include "managers/resource_manager.hpp"
 
 #include "stb_image.h"
+#include <cmath>
 
 ResourceManager* ResourceManager::mInstance = nullptr;
 
@@ -17,7 +18,7 @@ unsigned int ResourceManager::setTexture(const std::string &path, bool flip) {
 
     glTextureParameteri(textId, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTextureParameteri(textId, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTextureParameteri(textId, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTextureParameteri(textId, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTextureParameteri(textId, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     stbi_set_flip_vertically_on_load(flip);
@@ -26,6 +27,7 @@ unsigned int ResourceManager::setTexture(const std::string &path, bool flip) {
     if(data == nullptr){
         return 0;
     }
+
     GLenum format = 0;
     GLenum internalFormat = 0;
     if(nrChannels == 1) {
@@ -33,7 +35,7 @@ unsigned int ResourceManager::setTexture(const std::string &path, bool flip) {
         internalFormat = GL_R8;
     } else if (nrChannels == 2) {
         format = GL_RG;
-        internalFormat = GL_RG16F;
+        internalFormat = GL_RG8;
     } else if (nrChannels == 3) {
         format = GL_RGB;
         internalFormat = GL_RGB8;
@@ -41,8 +43,7 @@ unsigned int ResourceManager::setTexture(const std::string &path, bool flip) {
         format = GL_RGBA;
         internalFormat = GL_RGBA8;
     }
-
-    glTextureStorage2D(textId, 1, internalFormat, w, h);
+    glTextureStorage2D(textId, 1 + floor(log2(std::max(w, h))), internalFormat, w, h);
     glTextureSubImage2D(textId, 0, 0, 0, w, h, format, GL_UNSIGNED_BYTE, data);
     glGenerateTextureMipmap(textId);
     stbi_image_free(data);
