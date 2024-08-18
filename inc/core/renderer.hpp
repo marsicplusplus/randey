@@ -44,6 +44,7 @@ class Renderer {
         ShaderPtr mStencilPassShader;
         ShaderPtr mShadowMapShader;
         ShaderPtr mSkyboxShader;
+        ShaderPtr mTransparencyShader;
 
         // Buffers & Textures:
         GBuffer mGBuffer;
@@ -67,8 +68,9 @@ class Renderer {
         void lightPass();
         void pointLightsPass();
         void directionalLightsPass();
-        void forwardPass();
+        void drawPointLights();
         void shadowMapPass();
+        void transparencyPass();
         void skyboxPass();
 
         // Mesh loadMesh();

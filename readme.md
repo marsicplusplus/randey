@@ -33,4 +33,4 @@ Hence, if you are looking for a good codebase, [looks elsewhere](https://github.
 
 ## Screenshots
 
-![](screenshots\Sponza2024-08-09.png)
+![18_08_2024](screenshots/Sponza2024-08-18.png)

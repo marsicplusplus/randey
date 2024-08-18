@@ -31,6 +31,9 @@ unsigned int ResourceManager::setTexture(const std::string &path, bool flip) {
     if(nrChannels == 1) {
         format = GL_RED;
         internalFormat = GL_R8;
+    } else if (nrChannels == 2) {
+        format = GL_RG;
+        internalFormat = GL_RG16F;
     } else if (nrChannels == 3) {
         format = GL_RGB;
         internalFormat = GL_RGB8;

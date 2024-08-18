@@ -10,7 +10,7 @@
 
 #include <iostream>
 
-#define DEBUG false
+#define DEBUG true
 
 float quadVertices[] = {
     // positions      
@@ -31,6 +31,7 @@ void APIENTRY glDebugOutput(GLenum source,
 {
     // ignore non-significant error/warning codes
     if(id == 131169 || id == 131185 || id == 131218 || id == 131204) return; 
+    if(type == GL_DEBUG_TYPE_PERFORMANCE) return;
 
     std::cout << "---------------" << std::endl;
     std::cout << "Debug message (" << id << "): " <<  message << std::endl;
@@ -112,10 +113,10 @@ bool Renderer::init() {
     mCamera = std::make_unique<Camera>(glm::vec3(0.0, 2.0, 5.0), glm::vec3(0.0, 1.0, 0.0));
     mProjection = glm::perspective(glm::radians(70.0f), (float)mWidth/mHeight, 0.1f, 500.0f);
 
-    ModelPtr sponza = MeshLoader::LoadModel("../models/sponza/sponza.obj", "../models/sponza/", true);
+    ModelPtr sponza = MeshLoader::LoadModel("models/sponza/sponza.obj", "models/sponza/", true);
     sponza->getTransform().scale(1.0f/20.0f);
     mModels.push_back(sponza);
-    ModelPtr backpack = MeshLoader::LoadModel("../models/backpack.obj", "../models/", false);
+    ModelPtr backpack = MeshLoader::LoadModel("models/backpack.obj", "models/", false);
     backpack->getTransform().translate(0.0, 2.0, 0.0);
     backpack->getTransform().scale(0.8f);
     mModels.push_back(backpack);
@@ -133,56 +134,62 @@ bool Renderer::init() {
     //     glm::vec3(0.2f, 0.2f, 0.2f),    // Ambient
     //     glm::vec3(0.8f, 0.3f, 0.3f)     // Diffuse
     // ));
-    ShadowMapFBOPtr shadowMap = std::make_shared<ShadowMapFBO>();
-    shadowMap->init(mWidth, mHeight, GL_TEXTURE_2D);
+    ShadowMapFBOPtr shadowMap1 = std::make_shared<ShadowMapFBO>();
+    shadowMap1->init(mWidth, mHeight, GL_TEXTURE_2D);
     mDirLights.push_back(std::make_shared<DirectionalLight>(
         glm::vec3(0.6f, -1.0f, 0.0f),     // direction
         glm::vec3(0.2, 0.2, 0.2),           // Ambient
         glm::vec3(0.9, 0.9, 0.9),           // Diffuse
-        shadowMap
+        shadowMap1
     ));
+
     mLightRenderingShader = std::make_shared<Shader>();
-    mLightRenderingShader->attachShader("../glsl/lightVShader.glsl", GL_VERTEX_SHADER);
-    mLightRenderingShader->attachShader("../glsl/lightFShader.glsl", GL_FRAGMENT_SHADER);
+    mLightRenderingShader->attachShader("glsl/lightVShader.glsl", GL_VERTEX_SHADER);
+    mLightRenderingShader->attachShader("glsl/lightFShader.glsl", GL_FRAGMENT_SHADER);
     mLightRenderingShader->link();
 
     mStencilPassShader = std::make_shared<Shader>();
-    mStencilPassShader->attachShader("../glsl/stencil_pass/vShader.glsl", GL_VERTEX_SHADER);
-    mStencilPassShader->attachShader("../glsl/stencil_pass/fShader.glsl", GL_FRAGMENT_SHADER);
+    mStencilPassShader->attachShader("glsl/stencil_pass/vShader.glsl", GL_VERTEX_SHADER);
+    mStencilPassShader->attachShader("glsl/stencil_pass/fShader.glsl", GL_FRAGMENT_SHADER);
     mStencilPassShader->link();
 
     mGeometryShader = std::make_shared<Shader>();
-    mGeometryShader->attachShader("../glsl/geometry_pass/vShader.glsl", GL_VERTEX_SHADER);
-    mGeometryShader->attachShader("../glsl/geometry_pass/fShader.glsl", GL_FRAGMENT_SHADER);
+    mGeometryShader->attachShader("glsl/geometry_pass/vShader.glsl", GL_VERTEX_SHADER);
+    mGeometryShader->attachShader("glsl/geometry_pass/fShader.glsl", GL_FRAGMENT_SHADER);
     mGeometryShader->link();
 
     mShadowMapShader = std::make_shared<Shader>();
-    mShadowMapShader->attachShader("../glsl/shadow_pass/vShader.glsl", GL_VERTEX_SHADER);
-    mShadowMapShader->attachShader("../glsl/shadow_pass/fShader.glsl", GL_FRAGMENT_SHADER);
+    mShadowMapShader->attachShader("glsl/shadow_pass/vShader.glsl", GL_VERTEX_SHADER);
+    mShadowMapShader->attachShader("glsl/shadow_pass/fShader.glsl", GL_FRAGMENT_SHADER);
     mShadowMapShader->link();
 
     mPointLightsShader = std::make_shared<Shader>();
-    mPointLightsShader->attachShader("../glsl/light_pass/vShader.glsl", GL_VERTEX_SHADER);
-    mPointLightsShader->attachShader("../glsl/light_pass/fShader_point_light.glsl", GL_FRAGMENT_SHADER);
+    mPointLightsShader->attachShader("glsl/light_pass/vShader.glsl", GL_VERTEX_SHADER);
+    mPointLightsShader->attachShader("glsl/light_pass/fShader_point_light.glsl", GL_FRAGMENT_SHADER);
     mPointLightsShader->link();
 
     mDirectionalLightsShader = std::make_shared<Shader>();
-    mDirectionalLightsShader->attachShader("../glsl/light_pass/vShader.glsl", GL_VERTEX_SHADER);
-    mDirectionalLightsShader->attachShader("../glsl/light_pass/fShader_dir_light.glsl", GL_FRAGMENT_SHADER);
+    mDirectionalLightsShader->attachShader("glsl/light_pass/vShader.glsl", GL_VERTEX_SHADER);
+    mDirectionalLightsShader->attachShader("glsl/light_pass/fShader_dir_light.glsl", GL_FRAGMENT_SHADER);
     mDirectionalLightsShader->link();
 
     mSkyboxShader = std::make_shared<Shader>();
-    mSkyboxShader->attachShader("../glsl/skybox/vShader.glsl", GL_VERTEX_SHADER);
-    mSkyboxShader->attachShader("../glsl/skybox/fShader.glsl", GL_FRAGMENT_SHADER);
+    mSkyboxShader->attachShader("glsl/skybox/vShader.glsl", GL_VERTEX_SHADER);
+    mSkyboxShader->attachShader("glsl/skybox/fShader.glsl", GL_FRAGMENT_SHADER);
     mSkyboxShader->link();
 
-    mSkyboxTexture = std::make_shared<CubemapTexture>("../textures/yokohama2/posx.jpg",
-                                                        "../textures/yokohama2/posx.jpg",
-                                                        "../textures/yokohama2/negx.jpg",
-                                                        "../textures/yokohama2/posy.jpg",
-                                                        "../textures/yokohama2/negy.jpg",
-                                                        "../textures/yokohama2/posz.jpg",
-                                                        "../textures/yokohama2/negz.jpg");
+    mTransparencyShader = std::make_shared<Shader>();
+    mTransparencyShader->attachShader("glsl/transparency/vShader.glsl", GL_VERTEX_SHADER);
+    mTransparencyShader->attachShader("glsl/transparency/fShader.glsl", GL_FRAGMENT_SHADER);
+    mTransparencyShader->link();
+
+    mSkyboxTexture = std::make_shared<CubemapTexture>("textures/yokohama2/posx.jpg",
+                                                        "textures/yokohama2/posx.jpg",
+                                                        "textures/yokohama2/negx.jpg",
+                                                        "textures/yokohama2/posy.jpg",
+                                                        "textures/yokohama2/negy.jpg",
+                                                        "textures/yokohama2/posz.jpg",
+                                                        "textures/yokohama2/negz.jpg");
     mSkyboxTexture->load();
 
     mGBuffer.init(mWidth, mHeight);
@@ -206,7 +213,7 @@ bool Renderer::start() {
 
     while(!glfwWindowShouldClose(mWindow)) {
         float currentTime = glfwGetTime();
-       deltaTime = currentTime - lastTime;
+        deltaTime = currentTime - lastTime;
         lastTime = currentTime;
 
         processInput();
@@ -222,7 +229,9 @@ bool Renderer::start() {
         geometryPass();
         lightPass();
 
-        forwardPass();
+        mGBuffer.bindForwardPass();
+        drawPointLights();
+        transparencyPass();
         skyboxPass();
 
         mGBuffer.bindFinalPass();
@@ -237,7 +246,19 @@ bool Renderer::start() {
     return true;
 }
 
+void Renderer::transparencyPass() {
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
+    mTransparencyShader->use();
+    mTransparencyShader->setMat4("projection", mProjection);
+    mTransparencyShader->setMat4("view", mCamera->getViewMatrix());
+    for(auto &m : mModels) {
+        m->draw(mTransparencyShader, true);
+    }
+}
+
 void Renderer::skyboxPass() {
+    glEnable(GL_DEPTH_TEST);
     mSkyboxShader->use();
 
     int prevCullMode;
@@ -272,8 +293,7 @@ void Renderer::shadowMapPass() {
     glCullFace(GL_BACK);
 }
 
-void Renderer::forwardPass() {
-    mGBuffer.bindForwardPass();
+void Renderer::drawPointLights() {
     glEnable(GL_DEPTH_TEST);
     // Draw Lights as Spheres
     if(mDrawLights) {

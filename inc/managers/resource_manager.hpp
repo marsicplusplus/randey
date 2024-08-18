@@ -33,6 +33,7 @@ class ResourceManager{
 
 		ResourceManager() {
             mTextures.clear();
+			
 		};
 
 		static ResourceManager* mInstance;
