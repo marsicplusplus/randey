@@ -10,7 +10,7 @@
 
 #include <iostream>
 
-#define DEBUG true
+#define DEBUG false
 
 float quadVertices[] = {
     // positions      
@@ -124,23 +124,24 @@ bool Renderer::init() {
     mSphereMesh = std::make_shared<SphereMesh>();
     mCubeMesh = std::make_shared<CubeMesh>();
 
-    // mPointLights.push_back(std::make_shared<PointLight>(
-    //     glm::vec3(4.0, 2.0, -1.0),      // Position
-    //     glm::vec3(0.2f, 0.2f, 0.2f),    // Ambient
-    //     glm::vec3(0.8f, 0.3f, 0.3f)     // Diffuse
-    // ));
-    // mPointLights.push_back(std::make_shared<PointLight>(
-    //     glm::vec3(-4.0, 4.0, 2.0),      // Position
-    //     glm::vec3(0.2f, 0.2f, 0.2f),    // Ambient
-    //     glm::vec3(0.8f, 0.3f, 0.3f)     // Diffuse
-    // ));
-    ShadowMapFBOPtr shadowMap1 = std::make_shared<ShadowMapFBO>();
+    mPointLights.push_back(std::make_shared<PointLight>(
+        glm::vec3(4.0, 2.0, -1.0),      // Position
+        glm::vec3(0.2f, 0.2f, 0.2f),    // Ambient
+        glm::vec3(0.8f, 0.3f, 0.3f)     // Diffuse
+    ));
+    mPointLights.push_back(std::make_shared<PointLight>(
+        glm::vec3(-4.0, 4.0, 2.0),      // Position
+        glm::vec3(0.2f, 0.2f, 0.2f),    // Ambient
+        glm::vec3(0.8f, 0.3f, 0.3f)     // Diffuse
+    ));
+
+    ShadowMapFBOPtr shadowMap1 = std::make_unique<ShadowMapFBO>();
     shadowMap1->init(mWidth, mHeight, GL_TEXTURE_2D);
     mDirLights.push_back(std::make_shared<DirectionalLight>(
         glm::vec3(0.6f, -1.0f, 0.0f),     // direction
         glm::vec3(0.2, 0.2, 0.2),           // Ambient
         glm::vec3(0.9, 0.9, 0.9),           // Diffuse
-        shadowMap1
+        std::move(shadowMap1)
     ));
 
     mLightRenderingShader = std::make_shared<Shader>();
@@ -258,6 +259,7 @@ void Renderer::transparencyPass() {
 }
 
 void Renderer::skyboxPass() {
+    glDisable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
     mSkyboxShader->use();
 
@@ -363,7 +365,6 @@ void Renderer::pointLightsPass() {
         glCullFace(GL_BACK);
         glDisable(GL_BLEND);
     }
-
     glDisable(GL_STENCIL_TEST);
 }
 

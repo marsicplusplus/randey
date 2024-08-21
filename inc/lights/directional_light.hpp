@@ -7,7 +7,8 @@
 class DirectionalLight {
     public:
         DirectionalLight(glm::vec3 direction, glm::vec3 ambient, glm::vec3 diffuse, ShadowMapFBOPtr shadowmap) : 
-            mDir(glm::normalize(direction)), mAmbient(ambient), mDiffuse(diffuse), mSpecular(1.0f, 1.0f, 1.0f), mShadowMapFBO(shadowmap) {}
+            mDir(glm::normalize(direction)), mAmbient(ambient), mDiffuse(diffuse), 
+                mSpecular(1.0f, 1.0f, 1.0f), mShadowMapFBO(std::move(shadowmap)) {}
         float getVolumeRadius() {
             return 0.0f;
         }

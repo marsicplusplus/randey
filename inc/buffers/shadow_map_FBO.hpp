@@ -27,6 +27,6 @@ class ShadowMapFBO {
 
 };
 
-typedef std::shared_ptr<ShadowMapFBO> ShadowMapFBOPtr;
+typedef std::unique_ptr<ShadowMapFBO> ShadowMapFBOPtr;
 
 #endif
