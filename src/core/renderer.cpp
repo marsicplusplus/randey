@@ -110,39 +110,14 @@ bool Renderer::init() {
     glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
     #endif
 
-    mCamera = std::make_unique<Camera>(glm::vec3(0.0, 2.0, 5.0), glm::vec3(0.0, 1.0, 0.0));
-    mProjection = glm::perspective(glm::radians(70.0f), (float)mWidth/mHeight, 0.1f, 500.0f);
-
-    ModelPtr sponza = MeshLoader::LoadModel("models/sponza/sponza.obj", "models/sponza/", true);
-    sponza->getTransform().scale(1.0f/20.0f);
-    mModels.push_back(sponza);
-    ModelPtr backpack = MeshLoader::LoadModel("models/backpack.obj", "models/", false);
-    backpack->getTransform().translate(0.0, 2.0, 0.0);
-    backpack->getTransform().scale(0.8f);
-    mModels.push_back(backpack);
-
     mSphereMesh = std::make_shared<SphereMesh>();
     mCubeMesh = std::make_shared<CubeMesh>();
 
-    mPointLights.push_back(std::make_shared<PointLight>(
-        glm::vec3(4.0, 2.0, -1.0),      // Position
-        glm::vec3(0.2f, 0.2f, 0.2f),    // Ambient
-        glm::vec3(0.8f, 0.3f, 0.3f)     // Diffuse
-    ));
-    mPointLights.push_back(std::make_shared<PointLight>(
-        glm::vec3(-4.0, 4.0, 2.0),      // Position
-        glm::vec3(0.2f, 0.2f, 0.2f),    // Ambient
-        glm::vec3(0.8f, 0.3f, 0.3f)     // Diffuse
-    ));
+    std::vector<ModelPtr> models;
 
-    ShadowMapFBOPtr shadowMap1 = std::make_unique<ShadowMapFBO>();
-    shadowMap1->init(mWidth, mHeight, GL_TEXTURE_2D);
-    mDirLights.push_back(std::make_shared<DirectionalLight>(
-        glm::vec3(0.6f, -1.0f, 0.0f),     // direction
-        glm::vec3(0.2, 0.2, 0.2),           // Ambient
-        glm::vec3(0.9, 0.9, 0.9),           // Diffuse
-        std::move(shadowMap1)
-    ));
+    SceneParser::parseScene("scenes/sponza.toml", mModels, mDirLights, mPointLights, mSkyboxTexture, &mCamera, mWidth, mHeight);
+
+    mProjection = glm::perspective(glm::radians(70.0f), (float)mWidth/mHeight, 0.1f, 500.0f);
 
     mLightRenderingShader = std::make_shared<Shader>();
     mLightRenderingShader->attachShader("glsl/lightVShader.glsl", GL_VERTEX_SHADER);
@@ -184,13 +159,6 @@ bool Renderer::init() {
     mTransparencyShader->attachShader("glsl/transparency/fShader.glsl", GL_FRAGMENT_SHADER);
     mTransparencyShader->link();
 
-    mSkyboxTexture = std::make_shared<CubemapTexture>("textures/yokohama2/posx.jpg",
-                                                        "textures/yokohama2/posx.jpg",
-                                                        "textures/yokohama2/negx.jpg",
-                                                        "textures/yokohama2/posy.jpg",
-                                                        "textures/yokohama2/negy.jpg",
-                                                        "textures/yokohama2/posz.jpg",
-                                                        "textures/yokohama2/negz.jpg");
     mSkyboxTexture->load();
 
     mGBuffer.init(mWidth, mHeight);
@@ -414,6 +382,7 @@ void Renderer::processInput() {
 Renderer::~Renderer() {
     glfwDestroyWindow(mWindow);
     glfwTerminate();
+    delete mCamera;
 }
 
 void Renderer::framebufferSizeCB(GLFWwindow *window, int width, int height) {

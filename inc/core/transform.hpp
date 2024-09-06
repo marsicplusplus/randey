@@ -9,6 +9,7 @@
 class Transform {
 	public:
 		Transform();
+		Transform(glm::vec3 scale, glm::vec3 rotate, glm::vec3 translate);
 		static Transform lerp(const Transform *prev, const Transform *next, float dt);
 
 		glm::mat4 getMatrix();

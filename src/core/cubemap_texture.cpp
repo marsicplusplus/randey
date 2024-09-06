@@ -6,7 +6,7 @@
 
 #include "core/utils.hpp"
 
-CubemapTexture::CubemapTexture(const std::string& Directory,
+CubemapTexture::CubemapTexture(
             const std::string& PosXFilename,
             const std::string& NegXFilename,
             const std::string& PosYFilename,

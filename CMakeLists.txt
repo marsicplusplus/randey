@@ -10,10 +10,11 @@ set( GLFW_INSTALL OFF CACHE BOOL "GLFW lib only" FORCE)
 add_subdirectory( ext/glfw )
 
 include_directories( 
+	ext/
 	ext/glm/
 	ext/glfw/include/
 	ext/glad/include/
-	ext/
+	ext/tomlplusplus/include
 	src/
 	inc/
 	)

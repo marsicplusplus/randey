@@ -1,0 +1,43 @@
+title = "Sponza hall"
+
+[options]
+width = 1280
+height = 720
+draw_pointlights = true
+
+[camera]
+position = {x = 0.0, y = 2.0, z = 5.0}
+direction = {x = 0.0, y = 0.0, z = -1.0}
+
+[skybox]
+pos_x = "textures/yokohama2/posx.jpg"
+neg_x = "textures/yokohama2/negx.jpg"
+pos_y = "textures/yokohama2/posy.jpg"
+neg_y = "textures/yokohama2/negy.jpg"
+pos_z = "textures/yokohama2/posz.jpg"
+neg_z = "textures/yokohama2/negz.jpg"
+
+[[models]]
+name = "sponza"
+path = "models/sponza/sponza.obj"
+material_dir = "models/sponza/"
+flip_texture = true
+scale = {x = 0.05, y = 0.05, z = 0.05}
+
+[[models]]
+name = "backpack"
+path = "models/backpack.obj"
+material_dir = "models/"
+flip_texture = false
+scale       = {x = 0.8, y = 0.8, z = 0.8}
+translate   = {x = 0.0, y = 2.0, z = 0.0}
+
+[[point_lights]]
+position = {x = 4.0, y = 2.0, z = -1.0}
+ambient = {r = 0.2, g = 0.2, b = 0.2}
+diffuse = {r = 0.8, g = 0.3, b = 0.3}
+
+[[directional_lights]]
+direction = {x = 0.6, y = -1.0, z = 0.0}
+ambient = {r = 0.2, g = 0.2, b = 0.2}
+diffuse = {r = 0.9, g = 0.9, b = 0.9}

@@ -135,3 +135,133 @@ namespace Images {
         stbi_image_free(data);
     }
 }
+
+namespace SceneParser {
+    glm::vec3 parseVec3(const toml::node_view<toml::node> tbl) {
+        glm::vec3 ret(
+            tbl["x"].value_or(0.0),
+            tbl["y"].value_or(0.0),
+            tbl["z"].value_or(0.0)
+        );
+        return ret;
+    }
+    glm::vec3 parseColor(const toml::node_view<toml::node> tbl) {
+        glm::vec3 ret(
+            tbl["r"].value_or(0.0),
+            tbl["g"].value_or(0.0),
+            tbl["b"].value_or(0.0)
+        );
+        return ret;
+    }
+
+    bool parseCamera(const toml::node_view<toml::node> tbl, Camera *camera) {
+                return true;
+    }
+
+    bool parseScene(std::string filename, std::vector<ModelPtr> &models,
+                                            std::vector<DirectionalLightPtr> &dirLights,
+                                            std::vector<PointLightPtr> &pointLights,
+                                            std::shared_ptr<CubemapTexture> &cubeMap,
+                                            Camera **camera,
+                                            uint32_t &width, uint32_t &height) {
+        toml::table tbl;
+        try {
+            tbl = toml::parse_file(filename);
+            // std::cout << tbl << "\n";
+        }
+        catch (const toml::parse_error &err) {
+            std::cerr << "Scene parsing failed:\n"
+                      << err << "\n";
+            return false;
+        }
+
+        width = tbl["options"]["width"].value_or(800);
+        height = tbl["options"]["height"].value_or(600);
+
+        models.clear();
+        dirLights.clear();
+        pointLights.clear();
+
+        auto cameraToml = tbl["camera"];
+        if(!cameraToml.is_table()) {
+            std::cerr << "No camera in the toml file." << std::endl;
+            return false;
+        }
+
+        glm::vec3 pos = parseVec3(cameraToml["position"]);
+        glm::vec3 dir = parseVec3(cameraToml["direction"]);
+        glm::vec3 up = glm::vec3(0.0, 1.0, 0.0);
+        *camera = new Camera(pos, dir, up); 
+
+        auto modelsTable = tbl["models"];
+        toml::array *modelsArray = modelsTable.as_array();
+        if(modelsArray == nullptr) {
+            std::cerr << "No models in scene file\n";
+            return false;
+        }
+        modelsArray->for_each([&](toml::table &elem) { 
+            const std::string path = elem["path"].value_or("");
+            const std::string materialPath = elem["material_dir"].value_or("");
+            const bool flipTexture = elem["flip_texture"].value_or(false);
+            const glm::vec3 scale = parseVec3(elem["scale"]);
+            const glm::vec3 translate = parseVec3(elem["translate"]);
+            const glm::vec3 rotate = parseVec3(elem["rotate"]);
+            Transform t = Transform(scale, rotate, translate);
+            std::cout << "path: " << path << '\n';
+            ModelPtr model = MeshLoader::LoadModel(path, materialPath, flipTexture);
+            model->setTransform(t);
+            models.push_back(model);
+        });
+
+        // Lights:
+
+        auto pointLightsTable = tbl["point_lights"];
+        toml::array *pointLightsArray = pointLightsTable.as_array();
+        if(pointLightsArray != nullptr) {
+            pointLightsArray->for_each([&](toml::table &elem) { 
+                const glm::vec3 position = parseVec3(elem["position"]);
+                const glm::vec3 ambient = parseColor(elem["ambient"]);
+                const glm::vec3 diffuse = parseColor(elem["diffuse"]);
+                pointLights.push_back(std::make_shared<PointLight>(
+                    position,
+                    ambient,
+                    diffuse
+                ));
+            });
+        }
+
+        auto dirLightsTable = tbl["directional_lights"];
+        toml::array *dirLightsArray = dirLightsTable.as_array();
+        if(dirLightsArray != nullptr) {
+            dirLightsArray->for_each([&](toml::table &elem) { 
+                const glm::vec3 direction = parseVec3(elem["direction"]);
+                const glm::vec3 ambient = parseColor(elem["ambient"]);
+                const glm::vec3 diffuse = parseColor(elem["diffuse"]);
+                ShadowMapFBOPtr shadowMap = std::make_unique<ShadowMapFBO>();
+                shadowMap->init(width, height, GL_TEXTURE_2D);
+                dirLights.push_back(std::make_shared<DirectionalLight>(
+                    direction,
+                    ambient,
+                    diffuse,
+                    std::move(shadowMap)
+                ));
+            });
+        }
+
+        // TODO: Add check for missing images
+        if(!tbl["skybox"].is_table()){
+            cubeMap = nullptr;
+        } else {
+            auto skybox = tbl["skybox"];
+            cubeMap = std::make_shared<CubemapTexture>( skybox["pos_x"].value_or(""),
+                                                        skybox["neg_x"].value_or(""),
+                                                        skybox["pos_y"].value_or(""),
+                                                        skybox["neg_y"].value_or(""),
+                                                        skybox["pos_z"].value_or(""),
+                                                        skybox["neg_z"].value_or("")
+                                                    );
+        }
+
+       return true;
+    }
+}

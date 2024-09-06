@@ -1,5 +1,13 @@
 #include "core/transform.hpp"
 
+Transform::Transform(glm::vec3 scaling, glm::vec3 rotation, glm::vec3 translation) : Transform() {
+	scale(scaling);
+	rotate(rotation.x, glm::vec3(1.0, 0.0, 0.0));
+	rotate(rotation.y, glm::vec3(0.0, 1.0, 0.0));
+	rotate(rotation.z, glm::vec3(0.0, 0.0, 1.0));
+	translate(translation);
+}
+
 Transform::Transform(){
 	s = {1.0f, 1.0f, 1.0f};
 	t = {0.0f, 0.0f, 0.0f};

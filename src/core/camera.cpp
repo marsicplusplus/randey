@@ -7,8 +7,8 @@
 #include "glm/gtx/vector_angle.hpp"
 
 
-Camera::Camera(glm::vec3 pos, glm::vec3 up) : 
-    mFront(glm::vec3(0.0, 0.0, -1.0)),
+Camera::Camera(glm::vec3 pos, glm::vec3 front, glm::vec3 up) : 
+    mFront(front),
     mPos(pos),
     mWorldUp(up) {
     updateVectors();

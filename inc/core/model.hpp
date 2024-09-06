@@ -8,6 +8,9 @@ class Model {
     public:
         Model(std::vector<Mesh> meshes, std::vector<MaterialPtr> mats) : mMeshes(meshes), mMaterials(mats) {}
         Transform& getTransform() { return mTransform; }
+        void setTransform(Transform t) { 
+            mTransform = t; 
+        }
 
         void draw(ShaderPtr &shaderProgram, bool drawTransparent = false) {
             shaderProgram->setMat4("model", mTransform.getMatrix());

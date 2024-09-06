@@ -5,8 +5,7 @@
 
 class CubemapTexture {
     public:
-        CubemapTexture(const std::string& Directory,
-            const std::string& PosXFilename,
+        CubemapTexture(const std::string& PosXFilename,
             const std::string& NegXFilename,
             const std::string& PosYFilename,
             const std::string& NegYFilename,

@@ -29,7 +29,7 @@ class Renderer {
         uint32_t mWidth, mHeight;
 
         // Scene:
-        std::unique_ptr<Camera> mCamera;
+        Camera* mCamera;
         std::vector<ModelPtr> mModels;
         std::shared_ptr<SphereMesh> mSphereMesh;
         std::shared_ptr<CubeMesh> mCubeMesh;
