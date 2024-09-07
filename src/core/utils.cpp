@@ -1,5 +1,6 @@
 #include "core/utils.hpp"
 #include <iostream>
+#include <exception>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include "glm/gtx/hash.hpp"
@@ -138,6 +139,8 @@ namespace Images {
 
 namespace SceneParser {
     glm::vec3 parseVec3(const toml::node_view<toml::node> tbl) {
+        if(!tbl["x"].is_value() || !tbl["y"].is_value() || !tbl["z"].is_value())
+            throw std::runtime_error("Missing vec3 value.");
         glm::vec3 ret(
             tbl["x"].value_or(0.0),
             tbl["y"].value_or(0.0),
@@ -146,6 +149,8 @@ namespace SceneParser {
         return ret;
     }
     glm::vec3 parseColor(const toml::node_view<toml::node> tbl) {
+        if(!tbl["r"].is_value() || !tbl["g"].is_value() || !tbl["b"].is_value())
+            throw std::runtime_error("Missing color value.");
         glm::vec3 ret(
             tbl["r"].value_or(0.0),
             tbl["g"].value_or(0.0),
@@ -188,10 +193,15 @@ namespace SceneParser {
             return false;
         }
 
-        glm::vec3 pos = parseVec3(cameraToml["position"]);
-        glm::vec3 dir = parseVec3(cameraToml["direction"]);
-        glm::vec3 up = glm::vec3(0.0, 1.0, 0.0);
-        *camera = new Camera(pos, dir, up); 
+        try {
+            glm::vec3 pos = parseVec3(cameraToml["position"]);
+            glm::vec3 dir = parseVec3(cameraToml["direction"]);
+            glm::vec3 up = glm::vec3(0.0, 1.0, 0.0);
+            *camera = new Camera(pos, dir, up); 
+        } catch (const std::runtime_error &err) {
+            std::cerr << "Error parsing the camera || " << err.what() << std::endl;
+            return false;
+        }
 
         auto modelsTable = tbl["models"];
         toml::array *modelsArray = modelsTable.as_array();
@@ -203,9 +213,14 @@ namespace SceneParser {
             const std::string path = elem["path"].value_or("");
             const std::string materialPath = elem["material_dir"].value_or("");
             const bool flipTexture = elem["flip_texture"].value_or(false);
-            const glm::vec3 scale = parseVec3(elem["scale"]);
-            const glm::vec3 translate = parseVec3(elem["translate"]);
-            const glm::vec3 rotate = parseVec3(elem["rotate"]);
+            glm::vec3 scale(1.0);
+            glm::vec3 translate(0.0);
+            glm::vec3 rotate(0.0);
+            try {
+                scale       = parseVec3(elem["scale"]);
+                translate   = parseVec3(elem["translate"]);
+                rotate      = parseVec3(elem["rotate"]);
+            } catch (const std::runtime_error &err) {}
             Transform t = Transform(scale, rotate, translate);
             std::cout << "path: " << path << '\n';
             ModelPtr model = MeshLoader::LoadModel(path, materialPath, flipTexture);
@@ -219,14 +234,18 @@ namespace SceneParser {
         toml::array *pointLightsArray = pointLightsTable.as_array();
         if(pointLightsArray != nullptr) {
             pointLightsArray->for_each([&](toml::table &elem) { 
-                const glm::vec3 position = parseVec3(elem["position"]);
-                const glm::vec3 ambient = parseColor(elem["ambient"]);
-                const glm::vec3 diffuse = parseColor(elem["diffuse"]);
-                pointLights.push_back(std::make_shared<PointLight>(
-                    position,
-                    ambient,
-                    diffuse
-                ));
+                try{
+                    const glm::vec3 position = parseVec3(elem["position"]);
+                    const glm::vec3 ambient = parseColor(elem["ambient"]);
+                    const glm::vec3 diffuse = parseColor(elem["diffuse"]);
+                    pointLights.push_back(std::make_shared<PointLight>(
+                        position,
+                        ambient,
+                        diffuse
+                    ));
+                } catch (const std::runtime_error &err) {
+                    std::cerr << "Error parsing point light || " << err.what() << std::endl;
+                }
             });
         }
 
@@ -234,22 +253,27 @@ namespace SceneParser {
         toml::array *dirLightsArray = dirLightsTable.as_array();
         if(dirLightsArray != nullptr) {
             dirLightsArray->for_each([&](toml::table &elem) { 
-                const glm::vec3 direction = parseVec3(elem["direction"]);
-                const glm::vec3 ambient = parseColor(elem["ambient"]);
-                const glm::vec3 diffuse = parseColor(elem["diffuse"]);
-                ShadowMapFBOPtr shadowMap = std::make_unique<ShadowMapFBO>();
-                shadowMap->init(width, height, GL_TEXTURE_2D);
-                dirLights.push_back(std::make_shared<DirectionalLight>(
-                    direction,
-                    ambient,
-                    diffuse,
-                    std::move(shadowMap)
-                ));
+                try {
+                    const glm::vec3 direction = parseVec3(elem["direction"]);
+                    const glm::vec3 ambient = parseColor(elem["ambient"]);
+                    const glm::vec3 diffuse = parseColor(elem["diffuse"]);
+                    ShadowMapFBOPtr shadowMap = std::make_unique<ShadowMapFBO>();
+                    shadowMap->init(width, height, GL_TEXTURE_2D);
+                    dirLights.push_back(std::make_shared<DirectionalLight>(
+                        direction,
+                        ambient,
+                        diffuse,
+                        std::move(shadowMap)
+                    ));
+                } catch (const std::runtime_error &err) {
+                    std::cerr << "Error parsing directional light || " << err.what() << std::endl;
+                }
             });
         }
 
         // TODO: Add check for missing images
         if(!tbl["skybox"].is_table()){
+            std::cerr << "Skybox is missing." << std::endl;
             cubeMap = nullptr;
         } else {
             auto skybox = tbl["skybox"];
@@ -260,6 +284,7 @@ namespace SceneParser {
                                                         skybox["pos_z"].value_or(""),
                                                         skybox["neg_z"].value_or("")
                                                     );
+            cubeMap->load();
         }
 
        return true;

@@ -20,7 +20,7 @@ class Renderer {
         Renderer(uint32_t width, uint32_t height);
         ~Renderer();
 
-        bool init();
+        bool init(const std::string &filePath);
         bool start();
         
     private:

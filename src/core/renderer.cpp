@@ -9,6 +9,7 @@
 #include "glm/gtc/matrix_transform.hpp"
 
 #include <iostream>
+#include <exception>
 
 #define DEBUG false
 
@@ -72,7 +73,7 @@ void APIENTRY glDebugOutput(GLenum source,
 Renderer::Renderer(uint32_t width, uint32_t height) 
     : mWidth(width), mHeight(height) {}
 
-bool Renderer::init() {
+bool Renderer::init(const std::string &filePath) {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
@@ -83,15 +84,14 @@ bool Renderer::init() {
 
     mWindow = glfwCreateWindow(mWidth, mHeight, "Randey", NULL, NULL);
      if (mWindow == nullptr) {
-        std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
-        return false;
+        throw std::runtime_error("Failed to create GLFW Window.");
     }
 
     glfwMakeContextCurrent(mWindow);
     if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-        std::cout << "Failed to initialize GLAD" << std::endl;
-        return false;
+        glfwTerminate();
+        throw std::runtime_error("Failed to initialize GLAD");
     }    
     glViewport(0, 0, mWidth, mHeight);
     glfwSetFramebufferSizeCallback(mWindow, Renderer::framebufferSizeCB);
@@ -115,7 +115,13 @@ bool Renderer::init() {
 
     std::vector<ModelPtr> models;
 
-    SceneParser::parseScene("scenes/sponza.toml", mModels, mDirLights, mPointLights, mSkyboxTexture, &mCamera, mWidth, mHeight);
+    SceneParser::parseScene(filePath, 
+        mModels, 
+        mDirLights, 
+        mPointLights, 
+        mSkyboxTexture, 
+        &mCamera,  
+        mWidth, mHeight);
 
     mProjection = glm::perspective(glm::radians(70.0f), (float)mWidth/mHeight, 0.1f, 500.0f);
 
@@ -159,8 +165,6 @@ bool Renderer::init() {
     mTransparencyShader->attachShader("glsl/transparency/fShader.glsl", GL_FRAGMENT_SHADER);
     mTransparencyShader->link();
 
-    mSkyboxTexture->load();
-
     mGBuffer.init(mWidth, mHeight);
 
     glGenVertexArrays(1, &mQuadVAO);
@@ -173,6 +177,7 @@ bool Renderer::init() {
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glEnable(GL_DEPTH_TEST);
+
     return true;
 }
 
@@ -227,26 +232,27 @@ void Renderer::transparencyPass() {
 }
 
 void Renderer::skyboxPass() {
-    glDisable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
-    mSkyboxShader->use();
+    if(mSkyboxTexture != nullptr) {
+        glDisable(GL_CULL_FACE);
+        glEnable(GL_DEPTH_TEST);
+        mSkyboxShader->use();
 
-    int prevCullMode;
-    glGetIntegerv(GL_CULL_FACE_MODE, &prevCullMode);
-    int prevDepthMode;
-    glGetIntegerv(GL_DEPTH_FUNC, &prevDepthMode);
+        int prevCullMode;
+        glGetIntegerv(GL_CULL_FACE_MODE, &prevCullMode);
+        int prevDepthMode;
+        glGetIntegerv(GL_DEPTH_FUNC, &prevDepthMode);
 
-    glCullFace(GL_FRONT);
-    glDepthFunc(GL_LEQUAL);
+        glCullFace(GL_FRONT);
+        glDepthFunc(GL_LEQUAL);
 
-    mSkyboxShader->setMat4("gProjection", mProjection);
-    mSkyboxShader->setMat4("gView", mCamera->getViewMatrix());
-    mSkyboxTexture->bind(0);
-    mCubeMesh->draw(mSkyboxShader);
+        mSkyboxShader->setMat4("gProjection", mProjection);
+        mSkyboxShader->setMat4("gView", mCamera->getViewMatrix());
+        mSkyboxTexture->bind(0);
+        mCubeMesh->draw(mSkyboxShader);
 
-    glCullFace(prevCullMode);
-    glDepthFunc(prevDepthMode);
-
+        glCullFace(prevCullMode);
+        glDepthFunc(prevDepthMode);
+    }
 }
 
 void Renderer::shadowMapPass() {
