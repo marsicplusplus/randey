@@ -13,6 +13,7 @@ struct Material {
     sampler2D ambientTexture;
     sampler2D alphaTexture;
     float shininess;
+    float useSpecular;
 };
 
 uniform Material material;
@@ -26,6 +27,6 @@ void main()
     // and the diffuse per-fragment color
     gAlbedoSpec.rgb = texture(material.diffuseTexture, fUv).rgb;
     // store specular intensity in gAlbedoSpec's alpha component
-    gAlbedoSpec.a = texture(material.specularTexture, fUv).r;
+    gAlbedoSpec.a = texture(material.specularTexture, fUv).r * material.useSpecular;
     // gAmbient.rgb = texture(material.ambientTexture, fUv).rgb;
 }  
