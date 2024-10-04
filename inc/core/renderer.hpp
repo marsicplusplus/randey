@@ -42,7 +42,8 @@ class Renderer {
         ShaderPtr mDirectionalLightsShader;
         ShaderPtr mLightRenderingShader;
         ShaderPtr mStencilPassShader;
-        ShaderPtr mShadowMapShader;
+        ShaderPtr mDirectionalShadowMapShader;
+        ShaderPtr mPointShadowMapShader;
         ShaderPtr mSkyboxShader;
         ShaderPtr mTransparencyShader;
 

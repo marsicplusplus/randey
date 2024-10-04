@@ -14,6 +14,8 @@ uniform vec3 gViewPos;
 uniform mat4 lightView;
 uniform mat4 lightProj;
 
+uniform float isShadowCaster;
+
 struct DirectionalLight {
     vec3 direction;  
   
@@ -74,7 +76,7 @@ void main() {
     float spec = pow(max(dot(viewDir, reflectedDir), 0.0), 16.0);
     vec3 specular = spec * dirLight.specular * Specular;
 
-    float shadow = shadowFactor(FragPosLightSpace, Normal, lightDir);
+    float shadow = shadowFactor(FragPosLightSpace, Normal, lightDir) * isShadowCaster;
     vec3 ret = ambient + shadow * (diffuse + specular);
         
     FragColor = vec4(ret, 1.0);

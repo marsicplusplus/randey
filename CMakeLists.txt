@@ -46,6 +46,8 @@ set( SRC
 add_executable( Randey ${SRC})
 target_link_libraries( Randey 
 						glfw 
+						-static-libgcc
+						-static-libstdc++
 					)
 target_compile_options( Randey PRIVATE )
 set_property(TARGET Randey PROPERTY CXX_STANDARD 17)

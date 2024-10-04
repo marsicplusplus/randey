@@ -33,11 +33,13 @@ scale       = {x = 0.8, y = 0.8, z = 0.8}
 translate   = {x = 0.0, y = 2.0, z = 0.0}
 
 [[point_lights]]
-position = {x = 4.0, y = 2.0, z = -1.0}
+position = {x = 4.0, y = 7.0, z = -1.0}
 ambient = {r = 0.2, g = 0.2, b = 0.2}
-diffuse = {r = 0.8, g = 0.3, b = 0.3}
+diffuse = {r = 1.2, g = 1.2, b = 1.2}
+shadow = true
 
 [[directional_lights]]
 direction = {x = 0.6, y = -1.0, z = 0.0}
 ambient = {r = 0.2, g = 0.2, b = 0.2}
 diffuse = {r = 0.9, g = 0.9, b = 0.9}
+shadow = true

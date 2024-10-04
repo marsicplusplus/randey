@@ -10,11 +10,12 @@
 
 class Material {
     public:
-        Material(unsigned int diffuseTex, unsigned int specularTex, unsigned int ambientTex, unsigned int alphaTex) {
+        Material(unsigned int diffuseTex, unsigned int specularTex, unsigned int ambientTex, unsigned int alphaTex, unsigned int normalTex) {
                     mTextures[TextureType::SPECULAR] = specularTex;
                     mTextures[TextureType::DIFFUSE] = diffuseTex;
                     mTextures[TextureType::AMBIENT] = ambientTex;
                     mTextures[TextureType::ALPHA] = alphaTex;
+                    mTextures[TextureType::NORMAL] = normalTex;
             }
 
         void bindMaterial(ShaderPtr &shader);

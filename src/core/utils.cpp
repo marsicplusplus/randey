@@ -44,11 +44,17 @@ namespace MeshLoader
         {
             alphaTexture = ResourceManager::Instance()->setTexture(mp + mat.alpha_texname, flipTexture);
         }
+        unsigned int normalTexture = 0;
+        if (!mat.normal_texname.empty())
+        {
+            normalTexture = ResourceManager::Instance()->setTexture(mp + mat.normal_texname, flipTexture);
+        }
         return std::make_shared<Material>(
             diffuseTexture,
             specularTexture,
             ambientTexture,
-            alphaTexture);
+            alphaTexture,
+            normalTexture);
     }
 
     ModelPtr LoadModel(const std::string &fp,
@@ -109,11 +115,43 @@ namespace MeshLoader
                 } else {
                     materialId = shape.mesh.material_ids[0] + 1;
                 }
+                for (int i = 0; i < indices.size(); i+=3) {
+                    Vertex &v0 = vertices[indices[i + 0]];
+                    Vertex &v1 = vertices[indices[i + 1]];
+                    Vertex &v2 = vertices[indices[i + 2]];
+
+                    glm::vec3 e1 = v1.mPos - v0.mPos;
+                    glm::vec3 e2 = v2.mPos - v0.mPos;
+
+                    float deltaU1 = v1.mUv.x - v0.mUv.x;
+                    float deltaV1 = v1.mUv.y - v0.mUv.y;
+                    float deltaU2 = v2.mUv.x - v0.mUv.x;
+                    float deltaV2 = v2.mUv.y - v0.mUv.y;
+
+                    float f = 1.0f / (deltaU1 * deltaV2 - deltaU2 * deltaV1);
+
+                    glm::vec3 tangent;
+
+                    tangent.x = f * (deltaV2 * e1.x - deltaV1 * e2.x);
+                    tangent.y = f * (deltaV2 * e1.y - deltaV1 * e2.y);
+                    tangent.z = f * (deltaV2 * e1.z - deltaV1 * e2.z);
+
+                    // Bitangent.x = f * (-deltaU2 * e1.x + deltaU1 * e2.x);
+                    // Bitangent.y = f * (-deltaU2 * e1.y + deltaU1 * e2.y);
+                    // Bitangent.z = f * (-deltaU2 * e1.z + deltaU1 * e2.z);
+
+                    v0.mTangent += tangent;
+                    v1.mTangent += tangent;
+                    v2.mTangent += tangent;
+                }
+                for(int i = 0; i < vertices.size(); ++i) {
+                    vertices[i].mTangent = glm::normalize(vertices[i].mTangent);
+                }
                 Mesh mesh(vertices, indices, materialId);
                 meshes.push_back(mesh);
             } 
             std::vector<MaterialPtr> materials;
-            materials.push_back(std::make_shared<Material>(0, 0, 0, 0));
+            materials.push_back(std::make_shared<Material>(0, 0, 0, 0, 0));
             for(const auto &mat : objMaterials) {
                 materials.push_back(
                     parseMaterial(mp, mat, flipTexture)
@@ -238,10 +276,15 @@ namespace SceneParser {
                     const glm::vec3 position = parseVec3(elem["position"]);
                     const glm::vec3 ambient = parseColor(elem["ambient"]);
                     const glm::vec3 diffuse = parseColor(elem["diffuse"]);
+                    bool isShadowCaster = elem["shadow"].value_or(false);
+                    ShadowMapFBOPtr shadowMap = std::make_unique<ShadowMapFBO>();
+                    shadowMap->init(1024, 1024, GL_TEXTURE_CUBE_MAP);
                     pointLights.push_back(std::make_shared<PointLight>(
                         position,
                         ambient,
-                        diffuse
+                        diffuse,
+                        std::move(shadowMap),
+                        isShadowCaster
                     ));
                 } catch (const std::runtime_error &err) {
                     std::cerr << "Error parsing point light || " << err.what() << std::endl;
@@ -257,13 +300,15 @@ namespace SceneParser {
                     const glm::vec3 direction = parseVec3(elem["direction"]);
                     const glm::vec3 ambient = parseColor(elem["ambient"]);
                     const glm::vec3 diffuse = parseColor(elem["diffuse"]);
+                    bool isShadowCaster = elem["shadow"].value_or(false);
                     ShadowMapFBOPtr shadowMap = std::make_unique<ShadowMapFBO>();
                     shadowMap->init(width, height, GL_TEXTURE_2D);
                     dirLights.push_back(std::make_shared<DirectionalLight>(
                         direction,
                         ambient,
                         diffuse,
-                        std::move(shadowMap)
+                        std::move(shadowMap),
+                        isShadowCaster
                     ));
                 } catch (const std::runtime_error &err) {
                     std::cerr << "Error parsing directional light || " << err.what() << std::endl;

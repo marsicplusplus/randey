@@ -19,11 +19,15 @@ class ShadowMapFBO {
         bool init(unsigned int width, unsigned int height, unsigned int type = GL_TEXTURE_2D);
         void bindForWriting();
         void bindForReading(unsigned int textureUnit);
+        unsigned int getWidth() const { return mWidth; }
+        unsigned int getHeight() const { return mHeight; }
 
         private:
             unsigned int mFboID;
             unsigned int mShadowMapID;
             unsigned int mType;
+            unsigned int mWidth;
+            unsigned int mHeight;
 
 };
 

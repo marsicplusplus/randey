@@ -18,6 +18,7 @@ struct Vertex {
         glm::vec3 mPos;
         glm::vec3 mNormal;
         glm::vec2 mUv;
+        glm::vec3 mTangent;
 
         Vertex() {};
         Vertex(glm::vec3 pos, glm::vec3 normal, glm::vec2 uv) :

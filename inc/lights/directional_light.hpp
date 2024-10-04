@@ -6,14 +6,16 @@
 
 class DirectionalLight {
     public:
-        DirectionalLight(glm::vec3 direction, glm::vec3 ambient, glm::vec3 diffuse, ShadowMapFBOPtr shadowmap) : 
+        DirectionalLight(glm::vec3 direction, glm::vec3 ambient, glm::vec3 diffuse, ShadowMapFBOPtr shadowmap, bool isShadowCaster = false) : 
             mDir(glm::normalize(direction)), mAmbient(ambient), mDiffuse(diffuse), 
+                mIsShadowCaster(isShadowCaster),
                 mSpecular(1.0f, 1.0f, 1.0f), mShadowMapFBO(std::move(shadowmap)) {}
         float getVolumeRadius() {
             return 0.0f;
         }
         void bindLight(ShaderPtr &shader);
         void bindForShadowPass(ShaderPtr shader);
+        bool isShadowCaster() const { return mIsShadowCaster; }
 
     private:
         ShadowMapFBOPtr mShadowMapFBO;
@@ -22,6 +24,8 @@ class DirectionalLight {
         glm::vec3 mAmbient;
         glm::vec3 mDiffuse;
         glm::vec3 mSpecular;
+
+        bool mIsShadowCaster;
 
 };
 

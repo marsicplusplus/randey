@@ -6,8 +6,12 @@ layout(binding = 0) uniform sampler2D gPosition;
 layout(binding = 1) uniform sampler2D gNormal;
 layout(binding = 2) uniform sampler2D gAlbedoSpec;
 
+layout(binding = 5) uniform samplerCube gShadowMap;
+
 uniform vec2 gScreenSize;
 uniform vec3 gViewPos;
+
+uniform float gFarPlane;
 
 struct PointLight {
     vec3 position;  
@@ -19,9 +23,54 @@ struct PointLight {
     float constant;
     float linear;
     float quadratic;
-};
 
+    float isShadowCaster;
+};
 uniform PointLight pointLight;
+
+vec3 sampleOffsetDirections[20] = vec3[] (
+   vec3( 1,  1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1,  1,  1), 
+   vec3( 1,  1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1,  1, -1),
+   vec3( 1,  1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1,  1,  0),
+   vec3( 1,  0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1,  0, -1),
+   vec3( 0,  1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0,  1, -1)
+);   
+
+float shadowCalculation(vec3 fragPos) {
+    // // get vector between fragment position and light position
+    // vec3 fragToLight = fragPos - pointLight.position;
+    // // use the light to fragment vector to sample from the depth map    
+    // float closestDepth = texture(gShadowMap, fragToLight).r;
+    // // it is currently in linear range between [0,1]. Re-transform back to original value
+    // closestDepth *= gFarPlane;
+    // // now get current linear depth as the length between the fragment and light position
+    // float currentDepth = length(fragToLight);
+    // // now test for shadows
+    // float bias = 0.05; 
+    // float shadow = currentDepth -  bias > closestDepth ? 1.0 : 0.0;
+
+    // return shadow;
+    vec3 fragToLight = fragPos - pointLight.position;
+    float currentDepth = length(fragToLight);
+
+    float shadow = 0.0;
+    float bias   = 0.15;
+    int samples  = 20;
+    float viewDistance = length(gViewPos - fragPos);
+    float diskRadius = 0.05;
+    for(int i = 0; i < samples; ++i)
+    {
+        float closestDepth = texture(gShadowMap, fragToLight + sampleOffsetDirections[i] * diskRadius).r;
+        closestDepth *= gFarPlane;   // undo mapping [0;1]
+        if(currentDepth - bias > closestDepth)
+            shadow += 1.0;
+    }
+    shadow /= float(samples);  
+        
+    return shadow;
+}
+
+
 
 void main() {             
 
@@ -54,7 +103,9 @@ void main() {
     float attenuation = 1.0 / (pointLight.constant + pointLight.linear * dist + 
                     pointLight.quadratic * (dist * dist)); 
 
-    vec3 ret = ambient + diffuse + specular;
+    float shadow = shadowCalculation(FragPos) * pointLight.isShadowCaster;
+
+    vec3 ret = (ambient + (1.0 - shadow) * (diffuse + specular)) * attenuation;
         
-    FragColor = vec4(ret * attenuation, 1.0);
+    FragColor = vec4(ret, 1.0);
 }  

@@ -140,10 +140,16 @@ bool Renderer::init(const std::string &filePath) {
     mGeometryShader->attachShader("glsl/geometry_pass/fShader.glsl", GL_FRAGMENT_SHADER);
     mGeometryShader->link();
 
-    mShadowMapShader = std::make_shared<Shader>();
-    mShadowMapShader->attachShader("glsl/shadow_pass/vShader.glsl", GL_VERTEX_SHADER);
-    mShadowMapShader->attachShader("glsl/shadow_pass/fShader.glsl", GL_FRAGMENT_SHADER);
-    mShadowMapShader->link();
+    mDirectionalShadowMapShader = std::make_shared<Shader>();
+    mDirectionalShadowMapShader->attachShader("glsl/directional_shadow_pass/vShader.glsl", GL_VERTEX_SHADER);
+    mDirectionalShadowMapShader->attachShader("glsl/directional_shadow_pass/fShader.glsl", GL_FRAGMENT_SHADER);
+    mDirectionalShadowMapShader->link();
+
+    mPointShadowMapShader = std::make_shared<Shader>();
+    mPointShadowMapShader->attachShader("glsl/point_shadow_pass/vShader.glsl", GL_VERTEX_SHADER);
+    mPointShadowMapShader->attachShader("glsl/point_shadow_pass/gShader.glsl", GL_GEOMETRY_SHADER);
+    mPointShadowMapShader->attachShader("glsl/point_shadow_pass/fShader.glsl", GL_FRAGMENT_SHADER);
+    mPointShadowMapShader->link();
 
     mPointLightsShader = std::make_shared<Shader>();
     mPointLightsShader->attachShader("glsl/light_pass/vShader.glsl", GL_VERTEX_SHADER);
@@ -198,6 +204,8 @@ bool Renderer::start() {
 
         shadowMapPass();
 
+
+        glViewport(0, 0, mWidth, mHeight);
         mGBuffer.startFrame();
 
         geometryPass();
@@ -257,12 +265,25 @@ void Renderer::skyboxPass() {
 
 void Renderer::shadowMapPass() {
     glCullFace(GL_FRONT);
-    mShadowMapShader->use();
+    mDirectionalShadowMapShader->use();
     for (auto d : mDirLights) {
-        d->bindForShadowPass(mShadowMapShader);
-        glClear(GL_DEPTH_BUFFER_BIT);
-        for(auto &m : mModels) {
-            m->draw(mShadowMapShader);
+        if(d->isShadowCaster()){ 
+            d->bindForShadowPass(mDirectionalShadowMapShader);
+            glClear(GL_DEPTH_BUFFER_BIT);
+            for(auto &m : mModels) {
+                m->draw(mDirectionalShadowMapShader);
+            }
+        }
+    }
+
+    mPointShadowMapShader->use();
+    for (auto d : mPointLights) {
+        if(d->isShadowCaster()){
+            d->bindForShadowPass(mPointShadowMapShader);
+            glClear(GL_DEPTH_BUFFER_BIT);
+            for(auto &m : mModels) {
+                m->draw(mPointShadowMapShader);
+            }
         }
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
